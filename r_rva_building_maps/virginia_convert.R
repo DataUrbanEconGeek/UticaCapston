@@ -1,3 +1,11 @@
+###############################################################################
+## Author: Andrew Rosa                                                       ##
+##                                                                           ##
+## Notes: Code to converts Microsoft's US Building Footprint data for        ##
+## Virginia into a shp file from a geojson file.                             ##
+##                                                                           ##
+##                                                                           ##
+###############################################################################
 library(geojsonsf)
 library(sf)
 

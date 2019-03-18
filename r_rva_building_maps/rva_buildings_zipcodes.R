@@ -1,3 +1,12 @@
+###############################################################################
+## Author: Andrew Rosa                                                       ##
+##                                                                           ##
+## Notes: Code to combine Microsoft's US Building Footprint data with the US ##
+## Census's geograpic Boundries data provided through the tigris package for ##
+## Richmond Virginia.                                                        ##
+##                                                                           ##
+###############################################################################
+
 library(rgdal)
 library(rgeos)
 library(tigris)
