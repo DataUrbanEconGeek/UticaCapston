@@ -4,7 +4,7 @@ library(tigris)
 library(tmap)
 library(sf)
 
-shape <- readOGR(dsn = "/home/rstudio/projects/UticaCapston/r_rva_building_mapsVirginia.shp")
+shape <- readOGR(dsn = "/home/rstudio/projects/rva/r_rva_building_mapsVirginia.shp")
 
 
 v_counties <- counties("Virginia")
