@@ -1,23 +1,23 @@
 ###############################################################################
-## Author: Andrew Rosa                                                       ##
-##                                                                           ##
-## Notes: Code to download data from Richmond's Assesor's Office             ##
-##                                                                           ##
-##                                                                           ##
-##                                                                           ##
+## Author: Andrew Rosa                                                       
+##                                                                           
+## Notes: Code to download data from Richmond's Assesor's Office             
+##                                                                           
+##                                                                           
+##                                                                           
 ###############################################################################
 
-# Download Zip file containing data-sets
+# Download Zip file containing data-sets.
 zipfile_url <- 
   "ftp://ftp.ci.richmond.va.us/Assessor/Real%20Tables/COR%20Public%20Data%20Dec%205%202018.zip"
 
 destname <- "~/projects/rva/CORPublicDataDec052018.zip"
-
 download.file(url = zipfile_url, destfile = destname)
 
+# Unzip Downloaded file. 
 unzip(destname, exdir = "~/projects/rva")
 
-# Download Data Dictionaries
+# Download Data Dictionaries.
 download_data_dicts <- function(url){
   split_string <- unlist(strsplit(url, "/"))
   file_name <- split_string[length(split_string)]
