@@ -1,2 +1,2 @@
-# UticaCapstone
+# Utica Capstone
 Masters of Scinece Data Science 2019 Capston Project Repo
