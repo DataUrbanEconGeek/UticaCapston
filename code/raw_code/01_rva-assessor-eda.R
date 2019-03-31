@@ -7,18 +7,8 @@
 ##                                                                           
 ###############################################################################
 
-library(RPostgreSQL)
-library(getPass)
 library(dplyr)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB
-db <-dbConnect(pgdrv, dbname="defaultdb",
-               host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-               port=25060, user = 'doadmin', 
-               password = getPass("Enter Password:"))
+source("helper00_project-db-connection.R")
 
 # Load in Richmond Assessor's data from Data Warehouse
 master_df <- dbGetQuery(db, "SELECT * from real_master")

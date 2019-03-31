@@ -1,23 +1,13 @@
 ###############################################################################
 ## Author: Andrew Rosa                                                       
 ##                                                                           
-## Notes: Use to load Richmond Assessor's data from text  files into the Data
+## Notes: Use to load Richmond Assessor's data from text files into the Data
 ## Warehouse                                                                    
 ##                                                                           
 ##                                                                           
 ###############################################################################
 
-library(RPostgreSQL)
-library(getPass)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB
-db <-dbConnect(pgdrv, dbname="defaultdb",
-               host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-               port=25060, user = 'doadmin', 
-               password = getPass("Enter Password:"))
+source("helper00_project-db-connection.R")
 
 # Load in Richmond Assessor's data.
 master_df <- read.table("~/projects/rva/RealMaster.txt",

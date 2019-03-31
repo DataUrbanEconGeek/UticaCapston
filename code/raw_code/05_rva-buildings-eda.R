@@ -7,23 +7,13 @@
 ##                                                                           
 ###############################################################################
 
-library(RPostgreSQL)
-library(getPass)
 library(dplyr)
 library(ggplot2)
 library(ggmap)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB.
-db <-dbConnect(pgdrv, dbname="defaultdb",
-               host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-               port=25060, user = 'doadmin', 
-               password = getPass("Enter Password:"))
+source("helper00_project-db-connection.R")
 
 # Load in master building data frame from Data Warehouse.
-m_buildings_df <- dbGetQuery(db, "SELECT *
+m_buildings_df <- dbGetQuery(defaultdb, "SELECT *
                         from master_buildings")
 
 # Create a frequency table by years.

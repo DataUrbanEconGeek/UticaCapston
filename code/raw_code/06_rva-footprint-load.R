@@ -7,22 +7,12 @@
 ##                                                                           
 ###############################################################################
 
-library(RPostgreSQL)
 library(rpostgis)
 library(tigris)
 library(rgdal)
 library(sp)
 library(rgeos)
-library(getPass)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB.
-db1 <-dbConnect(pgdrv, dbname="spatialdb",
-                host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-                port=25060, user = 'doadmin', 
-                password = getPass("Enter Password:"))
+source("helper00_project-db-connection.R")
 
 # Load in building footprints
 shape <- readOGR(dsn = "/home/rstudio/projects/rva/r_rva_building_mapsVirginia.shp")
@@ -40,7 +30,7 @@ rva <- rva[1,]
 
 # Create a table to hold RVA's boundry in the data warehouse, populate with the 
 # spatial data.
-pgInsert(db1, "rva_boundry", rva)
+pgInsert(defaultdb, "rva_boundry", rva)
 
 # Intersect boundry and buildings. This will result in a subset of the buildings
 # that are within the city boundries.
@@ -48,4 +38,4 @@ shape <- shape[as.vector(gIntersects(shape, rva, byid = TRUE)), ]
 
 # Create RVA building footprints table in the data warehouse, populate with the 
 # spatial data.
-pgInsert(db1, "rva_building_footprints", shape)
+pgInsert(defaultdb, "rva_building_footprints", shape)

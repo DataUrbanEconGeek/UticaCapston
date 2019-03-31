@@ -7,23 +7,13 @@
 ##                                                                           
 ###############################################################################
 
-library(RPostgreSQL)
-library(getPass)
 library(dplyr)
 library(ggplot2)
 library(ggmap)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB
-db <-dbConnect(pgdrv, dbname="defaultdb",
-               host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-               port=25060, user = 'doadmin', 
-               password = getPass("Enter Password:"))
+source("helper00_project-db-connection.R")
 
 # Load in Richmond Assessor's data from Data Warehouse
-master_df <- dbGetQuery(db, "SELECT 'PIN', 
+master_df <- dbGetQuery(defaultdb, "SELECT 'PIN', 
                               'LocAddr', 
                               'LocCity',
                               'LocState', 
@@ -33,7 +23,7 @@ master_df <- dbGetQuery(db, "SELECT 'PIN',
                               'NeiDesc'
                               from real_master")
 
-land_df <- dbGetQuery(db, "SELECT 'PIN',
+land_df <- dbGetQuery(defaultdb, "SELECT 'PIN',
                             'WCovDes1',
                             'HeatDesc',
                             'RoofDesc',
@@ -50,7 +40,7 @@ land_df <- dbGetQuery(db, "SELECT 'PIN',
                             'UseDesc'
                             from real_land")
 
-improve_df <- dbGetQuery(db, "SELECT * from real_improvement")
+improve_df <- dbGetQuery(defaultdb, "SELECT * from real_improvement")
 
 # Select the first observations for each property by year built and BldgType
 improv_sub_df <- improve_df %>%
@@ -80,7 +70,7 @@ master_coords <- bind_rows(building_coord, building_coord2)
 master_coords$pin <- trimws(buildings_df$PIN[1:22980], which = "right")
 
 # Write coordinates to data warehouse
-dbWriteTable(db, "coordinate_lookup", master_coords, overwrite = TRUE)
+dbWriteTable(defaultdb, "coordinate_lookup", master_coords, overwrite = TRUE)
 
 # Keep a local back-up csv file.
 write.csv(master_coords, file = "~/projects/rva/coordinates.csv")
@@ -93,7 +83,7 @@ add_coords <- buildings_df %>%
   inner_join(master_coords, by = c("PIN" = "pin"))
 
 # Write full data-set to data warehouse
-dbWriteTable(db, "master_buildings", add_coords, overwrite = TRUE)
+dbWriteTable(defaultdb, "master_buildings", add_coords, overwrite = TRUE)
 
 
 

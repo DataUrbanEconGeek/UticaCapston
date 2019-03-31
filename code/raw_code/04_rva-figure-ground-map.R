@@ -5,29 +5,15 @@
 ##  
 ###############################################################################
 
-library(RPostgreSQL)
 library(rpostgis)
-library(rgdal)
-library(rgeos)
-library(tigris)
 library(tmap)
-library(sf)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB.
-db1 <-dbConnect(pgdrv, dbname="spatialdb",
-                host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-                port=25060, user = 'doadmin', 
-                password = getPass("Enter Password:"))
-
+source("helper00_project-db-connection.R")
 
 # Load in Richmond building shape file.
-rva_fp <- pgGetGeom(db1, "rva_building_footprints")
+rva_fp <- pgGetGeom(spatialdb, "rva_building_footprints")
 
 # Load in Richmond's boundry.
-rva_boundry <- pgGetGeom(db1, "rva_boundry")
+rva_boundry <- pgGetGeom(spatialdb, "rva_boundry")
 
 # Plot out map.
 mapplot <- tm_shape(rva_boundry) +
@@ -47,4 +33,11 @@ mapplot <- tm_shape(rva_boundry) +
   )
 
 # Save map.
-save_tmap(mapplot, "rva_building_footprints.png", width = 800, height = 800)
+png_path <- "../../figures/exploratory_figures/03_city-richmond-figure-ground-map.png"
+svg_path <- "../../figures/exploratory_figures/03_city-richmond-figure-ground-map.svg"
+
+save_tmap(mapplot, png_path, width = 800, height = 800)
+save_tmap(mapplot, svg_path, width = 800, height = 800)
+
+
+
