@@ -73,7 +73,7 @@ master_coords$pin <- trimws(buildings_df$PIN[1:22980], which = "right")
 dbWriteTable(defaultdb, "coordinate_lookup", master_coords, overwrite = TRUE)
 
 # Keep a local back-up csv file.
-write.csv(master_coords, file = "~/projects/rva/coordinates.csv")
+write.csv(master_coords, file = "../../data/raw_data/coordinates.csv")
 
 # Fix Pins in Building data frame
 buildings_df$PIN <- trimws(buildings_df$PIN, which = "right")

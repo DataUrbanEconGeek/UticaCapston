@@ -7,22 +7,12 @@
 ##                                                                           
 ###############################################################################
 
-library(RPostgreSQL)
 library(rpostgis)
-library(getPass)
-
-# Driver.
-pgdrv <- dbDriver(drvName = "PostgreSQL")
-
-# Connect to DB.
-db1 <-dbConnect(pgdrv, dbname="spatialdb",
-               host="db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com", 
-               port=25060, user = 'doadmin', 
-               password = getPass("Enter Password:"))
+source("helper00_project-db-connection.R")
 
 # Extend data-base with postGIS.
-dbSendQuery(db1, "CREATE EXTENSION IF NOT EXISTS postgis")
-dbGetQuery(db1, "CREATE EXTENSION IF NOT EXISTS POSTGIS_topology")
+dbSendQuery(spatialdb, "CREATE EXTENSION IF NOT EXISTS postgis")
+dbGetQuery(spatialdb, "CREATE EXTENSION IF NOT EXISTS POSTGIS_topology")
 
 # Check if data-base is set-up correctly. 
-pgPostGIS(db1)
+pgPostGIS(spatialdb)

@@ -15,7 +15,7 @@ library(rgeos)
 source("helper00_project-db-connection.R")
 
 # Load in building footprints
-shape <- readOGR(dsn = "/home/rstudio/projects/rva/r_rva_building_mapsVirginia.shp")
+shape <- readOGR(dsn = "../../data/temp_data/r_rva_building_mapsVirginia.shp")
 
 # Query to download boundries of counties in Virginia.
 v_counties <- counties("Virginia")

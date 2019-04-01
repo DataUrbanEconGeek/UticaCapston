@@ -10,11 +10,11 @@
 source("helper00_project-db-connection.R")
 
 # Load in Richmond Assessor's data.
-master_df <- read.table("~/projects/rva/RealMaster.txt",
+master_df <- read.table("../../data/temp_data/RealMaster.txt",
                         header = TRUE, sep = ",")
-land_df <- read.table("~/projects/rva/RealLand.txt",
+land_df <- read.table("../../data/temp_data/RealLand.txt",
                       header = TRUE, sep = ",")
-improve_df <- read.table("~/projects/rva/RealImprov.txt",
+improve_df <- read.table("../../data/temp_data/RealImprov.txt",
                          header = TRUE, sep = ",")
 
 # Write to Data Warehouse
