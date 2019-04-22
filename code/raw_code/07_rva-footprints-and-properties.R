@@ -126,8 +126,8 @@ year_map2 <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
   theme(axis.text = element_blank(), axis.title = element_blank(),
         panel.grid = element_blank())
 
-filename <- "../../figures/exploratory_figures/01_yr-built-map-2.png"
-ggsave(filename = filename, year_map2)
+filename <- "../../figures/exploratory_figures/01_yr-built-map-2.svg"
+ggsave(filename = filename, year_map2, width=1, height=1)
 
 stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = "gray", color = "gray",  alpha = 0.2, size = 0.1) +

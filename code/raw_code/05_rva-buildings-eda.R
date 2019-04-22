@@ -14,10 +14,15 @@ source("helper00_project-db-connection.R")
 
 # Load in master building data frame from Data Warehouse.
 m_buildings_df <- dbGetQuery(defaultdb, "SELECT *
-                        from master_buildings")
+                        from real_improvement")
+
+improv_sub_df <- m_buildings_df %>%
+  group_by(PIN) %>%
+  arrange(YrBuilt, BldgType) %>%
+  filter(YrBuilt == min(YrBuilt), row_number() == 1)
 
 # Create a frequency table by years.
-year_freq <- m_buildings_df %>%
+year_freq <- improv_sub_df %>%
   group_by(YrBuilt) %>%
   count(YrBuilt) %>%
   arrange(desc(n))
