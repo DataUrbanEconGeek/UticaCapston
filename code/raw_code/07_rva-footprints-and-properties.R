@@ -23,7 +23,6 @@ source("helper00_project-db-connection.R")
 m_buildings_df <- dbGetQuery(defaultdb, "SELECT *
                              from master_buildings")
 
-coor_na <- is.na(m_buildings_df$lon)
 m_buildings_df2 <- subset(m_buildings_df, m_buildings_df$lon != 
                             is.na(m_buildings_df$lon))
 
@@ -35,12 +34,15 @@ property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,92:93],
                                         m_buildings_df2[,1:24],
                                         proj4string = rva_fp@proj4string)
 
-#
+# Locate points from properties data that lie within polygons. This will provide
+# a data frame with the FID if the property is in a polygon, and NA if not.
 joined <- over(property_spdf, rva_fp)
 
-#
+# Add the FID's into properties data
 m_buildings_df2 <- cbind(m_buildings_df2, joined)
 
+# Multiple FIDs mapped to single properties, making duplicates, select first 
+# observation.
 m_buildings_df3 <- m_buildings_df2 %>%
   select(-one_of('PIN')) %>%
   group_by(FID) %>%
@@ -50,24 +52,25 @@ m_buildings_df4 <- SpatialPointsDataFrame(m_buildings_df3[92:93],
                                           m_buildings_df3, 
                                           proj4string = rva_fp@proj4string)
 
-#
-rva_fp2 <- rva_fp
-rva_fp2 <- merge(rva_fp, m_buildings_df3, by.x = "FID", by.y = "FID")
+# Merge property data with spatial data by FID
+rva_fp2 <- sp::merge(rva_fp, m_buildings_df3, by.x = "FID", by.y = "FID")
 
-#
+# Subset where spatial data frame where year is not missing.
 rva_fp3 <- rva_fp2[is.na(rva_fp2$YrBuilt) == FALSE, ]
 
+# Convert back into a regular data frame for use with ggplot2
 rva_fp4 <- fortify(rva_fp3, region = "FID")
 
+# The fortified data frame only contains needed spatial data, merge the dropped
+# variables back in.
 rva_fp5 <- merge(rva_fp4, rva_fp3@data, by.x = "id", by.y = "FID")
 
-simplepolys <- rmapshaper::ms_simplify(input = as(rva_fp, 'Spatial')) %>%
-  st_as_sf()
-
+# Fortify original spatial dataframe for use in ggplot2
 rva_fp6 <- fortify(rva_fp, region = "FID")
 
-
-#
+# Anti join to exclude buidling that have propertie data
+rva_fp_ex <- rva_fp6 %>%
+  anti_join(rva_fp5, by = "id")
 
 #
 year_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
@@ -123,7 +126,7 @@ rva_fp7 <- rva_fp5 %>%
          )
 
 
-year_map2 <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
+year_map2 <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = "gray", color = "gray",  alpha = 0.5, size = 0.1) +
   geom_polygon(data =  rva_fp7, aes(x = long, y = lat.x, group = group,
                                     fill = time_range)) +
