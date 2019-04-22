@@ -84,7 +84,7 @@ year_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
 
 ggplotly(year_map)
 
-filename <- "../../figures/exploratory_figures/01_yr-built-map.svg"
+filename <- "../../figures/exploratory_figures/01_yr-built-map.png"
 ggsave(filename = filename, year_map)
 
 stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
@@ -134,7 +134,7 @@ year_map2 <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   theme(axis.text = element_blank(), axis.title = element_blank(),
         panel.grid = element_blank())
 
-filename <- "../../figures/exploratory_figures/01_yr-built-map-2.svg"
+filename <- "../../figures/exploratory_figures/01_yr-built-map-2.png"
 ggsave(filename = filename, year_map2)
 
 stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
