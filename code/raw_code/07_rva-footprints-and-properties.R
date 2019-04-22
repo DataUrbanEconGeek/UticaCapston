@@ -9,6 +9,7 @@
 
 library(rpostgis)
 library(sp)
+library(sf)
 library(dplyr)
 library(stringr)
 library(ggplot2)
@@ -59,6 +60,10 @@ rva_fp3 <- rva_fp2[is.na(rva_fp2$YrBuilt) == FALSE, ]
 rva_fp4 <- fortify(rva_fp3, region = "FID")
 
 rva_fp5 <- merge(rva_fp4, rva_fp3@data, by.x = "id", by.y = "FID")
+
+simplepolys <- rmapshaper::ms_simplify(input = as(rva_fp, 'Spatial')) %>%
+  st_as_sf()
+
 rva_fp6 <- fortify(rva_fp, region = "FID")
 
 
@@ -127,7 +132,7 @@ year_map2 <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
         panel.grid = element_blank())
 
 filename <- "../../figures/exploratory_figures/01_yr-built-map-2.svg"
-ggsave(filename = filename, year_map2, width=1, height=1)
+ggsave(filename = filename, year_map2)
 
 stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = "gray", color = "gray",  alpha = 0.2, size = 0.1) +
