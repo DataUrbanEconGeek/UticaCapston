@@ -10,18 +10,16 @@
 library(dplyr)
 library(ggplot2)
 library(ggmap)
+library(RPostgreSQL)
 source("helper00_project-db-connection.R")
 
 # Load in Richmond Assessor's data from Data Warehouse
-master_df <- dbGetQuery(defaultdb, "SELECT 'PIN', 
-                              'LocAddr', 
-                              'LocCity',
-                              'LocState', 
-                              'LocZip', 
-                              'PCDesc', 
-                              'AssocNam',
-                              'NeiDesc'
-                              from real_master")
+master_df <- RPostgreSQL::dbGetQuery(defaultdb, "SELECT * from real_master")
+
+k_keeps <- c("PIN", "LocAddr", "LocCity", "LocState", "LocZip", "PCDesc", 
+             "AssocNam", "NeiDesc")
+
+master_df <- master_df[,k_keeps]
 
 land_df <- dbGetQuery(defaultdb, "SELECT 'PIN',
                             'WCovDes1',
@@ -62,12 +60,19 @@ buildings_df$FullAddr <- paste(trimws(as.character(buildings_df$LocAddr),
 # latitudinal coordinates. Done in phases in order to avoid paying for data.
 building_coord <- geocode(buildings_df$FullAddr[1:20000])
 building_coord2 <- geocode(buildings_df$FullAddr[20001:22980])
+building_coord3 <- geocode(buildings_df$FullAddr[22981:54000])
 
+write.csv(building_coord3, file = "../../data/raw_data/coords3.csv")
 # Bind coordinate data by rows
 master_coords <- bind_rows(building_coord, building_coord2)
 
+
+master_coords <- dbGetQuery(defaultdb, "SELECT * from coordinate_lookup")
+master_coords <- master_coords[,2:3]
+master_coords <- bind_rows(master_coords, building_coord3)
+
 # Add in the property pins for coordinates.
-master_coords$pin <- trimws(buildings_df$PIN[1:22980], which = "right")
+master_coords$pin <- trimws(buildings_df$PIN[1:54000], which = "right")
 
 # Write coordinates to data warehouse
 dbWriteTable(defaultdb, "coordinate_lookup", master_coords, overwrite = TRUE)
@@ -83,7 +88,8 @@ add_coords <- buildings_df %>%
   inner_join(master_coords, by = c("PIN" = "pin"))
 
 # Write full data-set to data warehouse
-dbWriteTable(defaultdb, "master_buildings", add_coords, overwrite = TRUE)
+dbWriteTable(defaultdb, "master_buildings", add_coords, overwrite = TRUE, 
+             row.names = FALSE)
 
 
 

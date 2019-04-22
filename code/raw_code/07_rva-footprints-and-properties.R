@@ -10,6 +10,7 @@
 library(rpostgis)
 library(sp)
 library(dplyr)
+library(stringr)
 library(ggplot2)
 library(ggmap)
 library(tmap)
@@ -29,7 +30,7 @@ m_buildings_df2 <- subset(m_buildings_df, m_buildings_df$lon !=
 rva_fp <- pgGetGeom(spatialdb, "rva_building_footprints")
 
 # Make into Spatial Points data frame.
-property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,25:26],
+property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,92:93],
                                         m_buildings_df2[,1:24],
                                         proj4string = rva_fp@proj4string)
 
@@ -44,7 +45,7 @@ m_buildings_df3 <- m_buildings_df2 %>%
   group_by(FID) %>%
   filter(row_number() == 1)
 
-m_buildings_df4 <- SpatialPointsDataFrame(m_buildings_df3[24:25],
+m_buildings_df4 <- SpatialPointsDataFrame(m_buildings_df3[92:93],
                                           m_buildings_df3, 
                                           proj4string = rva_fp@proj4string)
 
@@ -65,7 +66,7 @@ rva_fp6 <- fortify(rva_fp, region = "FID")
 
 #
 year_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
-  geom_polygon(fill = "green", color = "green",  alpha = 0.5, size = 0.1) +
+  geom_polygon(fill = "gray", color = "gray",  alpha = 0.5, size = 0.1) +
   geom_polygon(data =  rva_fp5, aes(x = long, y = lat.x, group = group,
                                     fill = YrBuilt)) +
   scale_fill_gradient(low="red", high="blue") +
@@ -75,9 +76,80 @@ year_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
 
 ggplotly(year_map)
 
-filename <- "../../figures/exploratory_figures/01_yr-built-map.png"
+filename <- "../../figures/exploratory_figures/01_yr-built-map.svg"
 ggsave(filename = filename, year_map)
 
+stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = "green", color = "green",  alpha = 0.5, size = 0.1) +
+  geom_polygon(data =  rva_fp5, aes(x = long, y = lat.x, group = group,
+                                    fill = Stories)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(), axis.title = element_blank(),
+        panel.grid = element_blank())
 
+
+rva_fp7 <- rva_fp5 %>%
+  mutate(
+    time_range = case_when(
+      YrBuilt < 1840 ~ "Before 1840",
+      YrBuilt >= 1840 & YrBuilt < 1880 ~ "1840-1879",
+      YrBuilt >= 1880 & YrBuilt < 1900 ~ "1880-1899",
+      YrBuilt >= 1900 & YrBuilt < 1920 ~ "1900-1919",
+      YrBuilt >= 1920 & YrBuilt < 1940 ~ "1920-1939",
+      YrBuilt >= 1940 & YrBuilt < 1960 ~ "1940-1959",
+      YrBuilt >= 1960 & YrBuilt < 1980 ~ "1960-1979",
+      YrBuilt >= 1980 & YrBuilt < 2000 ~ "1980-1999",
+      YrBuilt >= 2000 & YrBuilt < 2020 ~ "2000-2019",
+      TRUE ~ "Unknown"
+    )
+  ) %>%
+  mutate(Stories_fixed = as.numeric(gsub("\\.{2}", ".", gsub(",", ".", 
+                              trimws(str_remove(Stories, "\\+"), "right")
+                              )))) %>%
+  mutate(
+    stories_new = case_when(
+      Stories_fixed < 2 ~ "Less than 2 stories",
+      Stories_fixed >= 2 & Stories_fixed < 3 ~ "2-3 stories",
+      Stories_fixed >= 3 & Stories_fixed < 4 ~ "3-4 stories",
+      Stories_fixed >= 4 & Stories_fixed < 5 ~ "4-5 stories",
+      Stories_fixed >= 5 ~ "5 or more stories",
+      TRUE ~ "NA"
+    )
+         )
+
+
+year_map2 <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = "gray", color = "gray",  alpha = 0.5, size = 0.1) +
+  geom_polygon(data =  rva_fp7, aes(x = long, y = lat.x, group = group,
+                                    fill = time_range)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(), axis.title = element_blank(),
+        panel.grid = element_blank())
+
+filename <- "../../figures/exploratory_figures/01_yr-built-map-2.png"
+ggsave(filename = filename, year_map2)
+
+stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = "gray", color = "gray",  alpha = 0.2, size = 0.1) +
+  geom_polygon(data =  rva_fp7, aes(x = long, y = lat.x, group = group,
+                                    fill = stories_new)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(), axis.title = element_blank(),
+        panel.grid = element_blank())
+
+filename <- "../../figures/exploratory_figures/01_stories-map-2.png"
+ggsave(filename = filename, stories_map)
+
+rva_samp <- sample_n(rva_fp7, size = 1000)
+
+yrbl_stories <- rva_samp %>%
+  ggplot(aes(x = YrBuilt, y = Stories_fixed)) +
+  geom_point() +
+  theme_minimal()
+
+rva_subset <- rva_samp %>%
+  select(YrBuilt, Stories_fixed, lon, lat.x)
+
+cluster <- kmeans(rva_subset, centers = 2)
 
 
