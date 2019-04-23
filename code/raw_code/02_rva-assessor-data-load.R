@@ -18,7 +18,7 @@ improve_df <- read.table("../../data/temp_data/RealImprov.txt",
                          header = TRUE, sep = ",")
 
 # Write to Data Warehouse
-dbWriteTable(db, "real_master", master_df, overwrite = TRUE)
-dbWriteTable(db, "real_land", land_df, overwrite = TRUE)
-dbWriteTable(db, "real_improvement", improve_df, overwrite = TRUE)
+dbWriteTable(defaultdb, "real_master", master_df, overwrite = TRUE)
+dbWriteTable(defaultdb, "real_land", land_df, overwrite = TRUE)
+dbWriteTable(defaultdb, "real_improvement", improve_df, overwrite = TRUE)
 

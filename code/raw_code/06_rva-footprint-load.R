@@ -30,7 +30,7 @@ rva <- rva[1,]
 
 # Create a table to hold RVA's boundry in the data warehouse, populate with the 
 # spatial data.
-pgInsert(defaultdb, "rva_boundry", rva)
+pgInsert(spatialdb, "rva_boundry", rva)
 
 # Intersect boundry and buildings. This will result in a subset of the buildings
 # that are within the city boundries.
@@ -38,4 +38,4 @@ shape <- shape[as.vector(gIntersects(shape, rva, byid = TRUE)), ]
 
 # Create RVA building footprints table in the data warehouse, populate with the 
 # spatial data.
-pgInsert(defaultdb, "rva_building_footprints", shape)
+pgInsert(spatialdb, "rva_building_footprints", shape)

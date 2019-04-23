@@ -8,6 +8,8 @@
 ###############################################################################
 
 library(RPostgreSQL)
+library(DBI)
+library(odbc)
 library(getPass)
 
 # Driver.
@@ -17,12 +19,20 @@ pgdrv <- dbDriver(drvName = "PostgreSQL")
 hst <- "db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com"
 
 # Schemas.
-defaultdb <-dbConnect(pgdrv, dbname = "defaultdb",
-               host = hst, 
-               port = 25060, user = 'doadmin', 
-               password = getPass("Enter Password:"))
+#defaultdb <- dbConnect(odbc(), "PostgreSQL Unicode",
+#                      Database = "defaultdb",
+#                      Server = hst,
+#                      port = 25060,
+#                      UID = "doadmin",
+#                      PWD = getPass("Enter Password:"))
 
-spatialdb <-dbConnect(pgdrv, dbname = "spatialdb",
+defaultdb <- dbConnect(pgdrv, dbname = "defaultdb",
+                      host = hst, 
+                      port = 25060, user = 'doadmin', 
+                      passwor = getPass("Enter Password:"))
+
+
+spatialdb <- dbConnect(pgdrv, dbname = "spatialdb",
                 host = hst, 
                 port = 25060, user = 'doadmin', 
                 passwor = getPass("Enter Password:"))

@@ -48,9 +48,6 @@ m_buildings_df3 <- m_buildings_df2 %>%
   group_by(FID) %>%
   filter(row_number() == 1)
 
-m_buildings_df4 <- SpatialPointsDataFrame(m_buildings_df3[92:93],
-                                          m_buildings_df3, 
-                                          proj4string = rva_fp@proj4string)
 
 # Merge property data with spatial data by FID
 rva_fp2 <- sp::merge(rva_fp, m_buildings_df3, by.x = "FID", by.y = "FID")
@@ -73,7 +70,7 @@ rva_fp_ex <- rva_fp6 %>%
   anti_join(rva_fp5, by = "id")
 
 #
-year_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
+year_map <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = "gray", color = "gray",  alpha = 0.5, size = 0.1) +
   geom_polygon(data =  rva_fp5, aes(x = long, y = lat.x, group = group,
                                     fill = YrBuilt)) +
@@ -86,14 +83,6 @@ ggplotly(year_map)
 
 filename <- "../../figures/exploratory_figures/01_yr-built-map.png"
 ggsave(filename = filename, year_map)
-
-stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
-  geom_polygon(fill = "green", color = "green",  alpha = 0.5, size = 0.1) +
-  geom_polygon(data =  rva_fp5, aes(x = long, y = lat.x, group = group,
-                                    fill = Stories)) +
-  theme_minimal() +
-  theme(axis.text = element_blank(), axis.title = element_blank(),
-        panel.grid = element_blank())
 
 
 rva_fp7 <- rva_fp5 %>%
@@ -125,7 +114,6 @@ rva_fp7 <- rva_fp5 %>%
     )
          )
 
-
 year_map2 <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = "gray", color = "gray",  alpha = 0.5, size = 0.1) +
   geom_polygon(data =  rva_fp7, aes(x = long, y = lat.x, group = group,
@@ -137,7 +125,7 @@ year_map2 <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
 filename <- "../../figures/exploratory_figures/01_yr-built-map-2.png"
 ggsave(filename = filename, year_map2)
 
-stories_map <- ggplot(rva_fp6, aes(x = long, y = lat, group = group)) +
+stories_map <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = "gray", color = "gray",  alpha = 0.2, size = 0.1) +
   geom_polygon(data =  rva_fp7, aes(x = long, y = lat.x, group = group,
                                     fill = stories_new)) +
@@ -160,4 +148,4 @@ rva_subset <- rva_samp %>%
 
 cluster <- kmeans(rva_subset, centers = 2)
 
-
+ggplotly(year_map2)
