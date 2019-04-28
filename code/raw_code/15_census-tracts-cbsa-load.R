@@ -1,3 +1,10 @@
+###############################################################################
+## Author: Andrew Rosa                                                       
+##                                                                           
+## Notes: 
+##                                                                           
+###############################################################################
+
 library(rpostgis)
 library(sp)
 library(tigris)
@@ -20,6 +27,5 @@ rva_cbs <- spTransform(rva_cbs, CRS = proj4string(rva_bound))
 # Save to DB
 pgInsert(spatialdb, "rva_cbs_census_tracts", rva_cbs_tracts)
 pgInsert(spatialdb, "rva_cbsa", rva_cbs)
-
 
 

@@ -1,19 +1,34 @@
+###############################################################################
+## Author: Andrew Rosa                                                       
+##                                                                           
+## Notes: 
+##                                                                           
+###############################################################################
+
 library(dplyr)
 source("helper00_project-db-connection.R")
 
 cnames <- c("median_income", "median_home_value", "females_bach_deg", 
             "males_bach_deg", "total_pop")
 
-sf3_old_names <- c("P053001", "H076001", "P037032", "P037015", "P001001")
+census_2000_names <- c("new_income", "new_home_val", "new_female_bach", 
+                       "new_male_bach", "new_pop")
 
 acs_old_names <- c("B19013_001E", "B25077_001E", "B15002_032E", "B15002_015E", 
                    "B01003_001E")
 
-sf3_2000_income <- dbGetQuery(defaultdb, "SELECT * from sf3_2000")
+census_2000 <- dbGetQuery(defaultdb, "SELECT * from corrected_2000_census")
 acs_income_2017 <- dbGetQuery(defaultdb, "SELECT * from acs5_2017")
 
-cln_2000 <- sf3_2000_income %>%
-  rename_at(vars(sf3_old_names), ~ cnames) %>%
+census_2000 <- census_2000 %>%
+  mutate(state = str_sub(trtid10, 1, 2),
+         county = str_sub(trtid10, 3, 5),
+         tract = str_sub(trtid10, 6, 11)) %>%
+  select(state, county, tract, new_income, new_home_val, new_female_bach,
+         new_male_bach, new_pop)
+
+cln_2000 <- census_2000 %>%
+  rename_at(vars(census_2000_names), ~ cnames) %>%
   mutate(total_bach_deg = females_bach_deg + males_bach_deg) %>%
   mutate(percent_bach_deg = (total_bach_deg/total_pop)*100)
 

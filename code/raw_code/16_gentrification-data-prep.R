@@ -1,9 +1,18 @@
+###############################################################################
+## Author: Andrew Rosa                                                       
+##                                                                           
+## Notes: 
+##                                                                           
+###############################################################################
+
 library(dplyr)
 source("helper00_project-db-connection.R")
 
 cln_all <- dbGetQuery(defaultdb, "SELECT * from cln_census_2000_2017")
 
+
 gent_tests <- cln_all %>%
+  filter(mi_2017 != -666666666 & tp_2000 > 500) %>%
   mutate(
     eligibility_test_1 = case_when(
       mi_2000 <= quantile(na.omit(mi_2000), 0.4) ~ 1,

@@ -1,3 +1,10 @@
+###############################################################################
+## Author: Andrew Rosa                                                       
+##                                                                           
+## Notes: 
+##                                                                           
+###############################################################################
+
 library(censusapi)
 library(dplyr)
 source("helper00_project-db-connection.R")
@@ -20,8 +27,9 @@ countys <- unique(rva_cbs_tracts$COUNTYFP)
 # P001001 - Total Population
 sf3_2000_income <- getCensus(name = "sf3",
                              vintage = 2000,
-                             vars = c("P053001", "H076001", "P037032", 
-                                      "P037015", "P001001"),
+                             vars = c("P053001", "P052001", "H076001", 
+                                      "H001001", "P037032", "P037015", 
+                                      "P001001"),
                              region = "tract:*",
                              regionin = regionin_string)
 

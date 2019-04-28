@@ -1,3 +1,10 @@
+###############################################################################
+## Author: Andrew Rosa                                                       
+##                                                                           
+## Notes: 
+##                                                                           
+###############################################################################
+
 library(dplyr)
 library(ggplot2)
 source("helper00_project-db-connection.R")
@@ -18,7 +25,7 @@ gent_map <- ggplot(rva_tracts_n_gent, aes(x = long, y = lat, group = group)) +
   theme(axis.text = element_blank(), axis.title = element_blank(),
         panel.grid = element_blank())
 
-dest_path <- "../../figures/exploratory_figures/gentried_map.png"
+dest_path <- "../../figures/exploratory_figures/04_gentried-map.png"
 ggsave(filename = dest_path, gent_map)
 
 
