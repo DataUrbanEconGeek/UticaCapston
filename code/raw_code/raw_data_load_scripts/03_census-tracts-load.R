@@ -10,7 +10,7 @@ library(tigris)
 library(rgdal)
 library(sp)
 library(rgeos)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 
 dbGetQuery(spatialdb, "SELECT * FROM pg_catalog.pg_tables WHERE 

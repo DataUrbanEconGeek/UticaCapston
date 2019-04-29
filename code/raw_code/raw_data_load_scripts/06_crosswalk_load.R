@@ -7,9 +7,9 @@
 
 library(dplyr)
 library(stringr)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
-dest_file <- "../../data/raw_data/crosswalk_2000_2010.csv"
+dest_file <- "../../../data/raw_data/crosswalk_2000_2010.csv"
 crosswalk <- read.csv(dest_file, colClasses = "character")
 
 county_codes <- c("760", "007", "025", "033", "036", "041", "049", "053", "057", 

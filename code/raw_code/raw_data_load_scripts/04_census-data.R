@@ -7,7 +7,7 @@
 
 library(censusapi)
 library(dplyr)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 
 apis <- listCensusApis()

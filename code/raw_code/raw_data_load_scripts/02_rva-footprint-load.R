@@ -12,10 +12,10 @@ library(tigris)
 library(rgdal)
 library(sp)
 library(rgeos)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 # Load in building footprints
-shape <- readOGR(dsn = "../../data/temp_data/r_rva_building_mapsVirginia.shp")
+shape <- readOGR(dsn = "../../../data/temp_data/r_rva_building_mapsVirginia.shp")
 
 # Query to download boundries of counties in Virginia.
 v_counties <- counties("Virginia")

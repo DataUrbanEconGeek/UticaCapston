@@ -8,7 +8,7 @@
 ###############################################################################
 
 url <- "https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Virginia.zip"
-destname <- "../../data/temp_data/Virginia.zip"
+destname <- "../../../data/temp_data/Virginia.zip"
 
 download.file(url = url, destfile = destname)
 

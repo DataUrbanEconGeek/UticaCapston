@@ -8,7 +8,7 @@
 library(rpostgis)
 library(sp)
 library(tigris)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 rva_bound <- pgGetGeom(spatialdb, "rva_boundry")
 

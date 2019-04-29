@@ -6,11 +6,11 @@
 ###############################################################################
 
 library(dplyr)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 url_tract_relationship <- "https://www2.census.gov/geo/docs/maps-data/data/rel/trf_txt/va51trf.txt"
 
-dest_file <- "../../data/raw_data/tract_2000_2010_relations"
+dest_file <- "../../../data/raw_data/tract_2000_2010_relations"
 download.file(url_tract_relationship, 
               destfile = dest_file)
 
