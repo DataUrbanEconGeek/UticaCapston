@@ -29,4 +29,5 @@ assessor_load_to_db <- function(){
   file.remove("../../../data/temp_data/RealMaster.txt")
   file.remove("../../../data/temp_data/RealLand.txt")
   file.remove("../../../data/temp_data/RealImprov.txt")
+  rile.remove("../../../data/temp_data/CORPublicDataDec052018.zip")
 }
