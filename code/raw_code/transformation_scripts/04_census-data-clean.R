@@ -6,19 +6,43 @@
 ###############################################################################
 
 library(dplyr)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
-cnames <- c("median_income", "median_home_value", "females_bach_deg", 
-            "males_bach_deg", "total_pop")
 
+acs_cln_enh <- function(df, year){
+  acs_old_names <- c("B19013_001E", "B25077_001E", "B15002_032E", "B15002_015E", 
+                     "B01003_001E")
+  new_names_start <- c("median_income", "median_home_value", "females_bach_deg", 
+                       "males_bach_deg", "total_pop")
+  acs_new_names <- paste0(new_names_start, "_", year)
+  tot_bach_deg_exp <- paste0(acs_new_names[3], " + ", acs_new_names[4])
+  perc_bach_deg_exp <- paste0("(total_bach_deg / ", acs_new_names[3], ") * 100")
+  df_cln <- df %>%
+    rename_at(vars(acs_old_names), ~ acs_new_names) %>%
+    mutate_(total_bach_deg = tot_bach_deg_exp) %>%
+    mutate_(percent_bach_deg = perc_bach_deg_exp)
+  colnames(df_cln)[9] <- paste0("total_bach_deg", "_", year)
+  colnames(df_cln)[10] <- paste0("percent_bach_deg", "_", year)
+  return(df_cln)
+} 
+
+
+
+
+# Load data
+census_2000 <- dbGetQuery(defaultdb, "SELECT * from corrected_2000_census")
+acs_2010_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2010")
+acs_2011_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2011")
+acs_2012_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2012")
+acs_2013_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2013")
+acs_2014_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2014")
+acs_2015_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2015")
+acs_2016_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2016")
+acs_2017_data <- dbGetQuery(defaultdb, "SELECT * from acs5_2017")
+
+# 200 sf3 census clean
 census_2000_names <- c("new_income", "new_home_val", "new_female_bach", 
                        "new_male_bach", "new_pop")
-
-acs_old_names <- c("B19013_001E", "B25077_001E", "B15002_032E", "B15002_015E", 
-                   "B01003_001E")
-
-census_2000 <- dbGetQuery(defaultdb, "SELECT * from corrected_2000_census")
-acs_income_2017 <- dbGetQuery(defaultdb, "SELECT * from acs5_2017")
 
 census_2000 <- census_2000 %>%
   mutate(state = str_sub(trtid10, 1, 2),
@@ -27,33 +51,47 @@ census_2000 <- census_2000 %>%
   select(state, county, tract, new_income, new_home_val, new_female_bach,
          new_male_bach, new_pop)
 
+cnames <- c("median_income_2000", "median_home_value_2000", 
+            "females_bach_deg_2000", "males_bach_deg_2000", "total_pop_2000")
+
 cln_2000 <- census_2000 %>%
   rename_at(vars(census_2000_names), ~ cnames) %>%
-  mutate(total_bach_deg = females_bach_deg + males_bach_deg) %>%
-  mutate(percent_bach_deg = (total_bach_deg/total_pop)*100)
+  mutate(total_bach_deg_2000 = females_bach_deg_2000 + males_bach_deg_2000) %>%
+  mutate(percent_bach_deg_2000 = (total_bach_deg_2000 / total_pop_2000) * 100)
 
-cln_2017 <- acs_income_2017 %>%
-  rename_at(vars(acs_old_names), ~ cnames) %>%
-  mutate(total_bach_deg = females_bach_deg + males_bach_deg) %>%
-  mutate(percent_bach_deg = (total_bach_deg/total_pop)*100)
 
-new_col_names <-c("state", "county", "tract", "mi_2000", "mhv_2000", "fbd_2000",
-                  "mbd_2000", "tp_2000", "tbd_2000", "pbd_2000", "mi_2017", 
-                  "mhv_2017", "fbd_2017", "mbd_2017", "tp_2017", "tbd_2017", 
-                  "pbd_2017")
+# acs census clean
+cln_2010 <- acs_cln_enh(acs_2010_data, year = 2010)
+cln_2011 <- acs_cln_enh(acs_2011_data, year = 2011)
+cln_2012 <- acs_cln_enh(acs_2012_data, year = 2012)
+cln_2013 <- acs_cln_enh(acs_2013_data, year = 2013)
+cln_2014 <- acs_cln_enh(acs_2014_data, year = 2014)
+cln_2015 <- acs_cln_enh(acs_2015_data, year = 2015)
+cln_2016 <- acs_cln_enh(acs_2016_data, year = 2016)
+cln_2017 <- acs_cln_enh(acs_2017_data, year = 2017)
+
 
 # Inflation 2000-2017 2.099%
 cln_all <- cln_2000 %>%
+  full_join(cln_2010, by = c("state", "county", "tract")) %>%
   full_join(cln_2017, by = c("state", "county", "tract")) %>%
-  rename_all(~new_col_names) %>%
-  mutate(mi_2000_adj = mi_2000*1.02099^17,
-         mhv_2000_adj = mhv_2000*1.02099^17) %>%
-  mutate(in_chg = mi_2017 - mi_2000_adj,
-         mhv_chg = mhv_2017 - mhv_2000_adj) %>%
-  mutate(in_gl = 
+  mutate(median_income_2000_adj = median_income_2000 * 1.02099^17,
+         median_home_value_2000_adj = median_home_value_2000 * 1.02099^17) %>%
+  mutate(income_chg_00_10 = median_income_2010 - median_income_2000_adj,
+         income_chg_00_17 = median_income_2017 - median_income_2000_adj,
+         home_value_chg_00_10 = median_home_value_2010 - 
+           median_home_value_2000_adj,
+         home_value_chg_00_17 = median_home_value_2017 - 
+           median_home_value_2000_adj) %>%
+  mutate(in_gl_00_10 = 
            case_when(
-             in_chg > 0 ~ "gain",
-             in_chg < 0 ~ "loss"
+             income_chg_00_10 > 0 ~ "gain",
+             income_chg_00_10 < 0 ~ "loss"
+           ),
+         in_gl_00_17 = 
+           case_when(
+             income_chg_00_17 > 0 ~ "gain",
+             income_chg_00_17 < 0 ~ "loss"
            )
   )
 

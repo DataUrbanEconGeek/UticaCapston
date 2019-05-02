@@ -7,10 +7,10 @@
 
 library(dplyr)
 library(stringr)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
-dest_file <- "../../data/raw_data/crosswalk_2000_2010.csv"
-crosswalk <- read.csv(dest_file, colClasses = "character")
+file_path <- "../../data/raw_data/crosswalk_2000_2010.csv"
+crosswalk <- read.csv(file_path, colClasses = "character")
 
 sf3_2000 <- dbGetQuery(defaultdb, "SELECT * from sf3_2000")
 

@@ -21,8 +21,8 @@ rva_tracts_n_gent <- rva_tracts %>%
   inner_join(rva_gent, by = c("id" = "tract")) %>%
   mutate(
     gent_n_egible = case_when(
-      gentrified == "yes" ~ "Gentrified",
-      gentrified == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_10 == "yes" ~ "Gentrified",
+      gentrified_10 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     )
   )
