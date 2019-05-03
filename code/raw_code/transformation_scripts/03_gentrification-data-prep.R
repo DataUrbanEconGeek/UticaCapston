@@ -12,7 +12,9 @@ cln_all <- dbGetQuery(defaultdb, "SELECT * from cln_census_2000_2017")
 
 
 gent_tests <- cln_all %>%
-  filter(median_income_2017 != -666666666 & total_pop_2000 > 500) %>%
+  filter(median_income_2017 != -666666666 & 
+           median_home_value_2017 != -666666666 &
+           total_pop_2000 > 500) %>%
   mutate(
     eligibility_test_1 = case_when(
       median_income_2000 <= quantile(na.omit(median_income_2000), 0.4) ~ 1,
@@ -97,3 +99,21 @@ rva_gent <- gent_tests %>%
 
 dbWriteTable(defaultdb, "rva_gent_2000_2017", rva_gent, overwrite = TRUE,
              row.names = FALSE)
+
+
+
+t2 <- rva_gent %>%
+  filter(eligibil_for_gentrification == "yes") %>%
+  select(tract, median_income_2000, median_income_2000_adj2017, 
+         median_income_2017, income_chg_00_17, in_gl_00_17, 
+         median_home_value_2000, median_home_value_2000_adj2017, 
+         median_home_value_2017, home_value_chg_00_17, females_bach_deg_2000,
+         males_bach_deg_2000, total_bach_deg_2000, total_pop_2000, 
+         percent_bach_deg_2000, females_bach_deg_2017, males_bach_deg_2017,
+         total_bach_deg_2017, total_pop_2017, percent_bach_deg_2017, 
+         change_pbd_00_17, gentrified_17)
+
+
+
+
+

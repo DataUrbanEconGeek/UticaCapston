@@ -16,7 +16,7 @@ acs_cln_enh <- function(df, year){
                        "males_bach_deg", "total_pop")
   acs_new_names <- paste0(new_names_start, "_", year)
   tot_bach_deg_exp <- paste0(acs_new_names[3], " + ", acs_new_names[4])
-  perc_bach_deg_exp <- paste0("(total_bach_deg / ", acs_new_names[3], ") * 100")
+  perc_bach_deg_exp <- paste0("(", acs_new_names[3], " / total_bach_deg) * 100")
   df_cln <- df %>%
     rename_at(vars(acs_old_names), ~ acs_new_names) %>%
     mutate_(total_bach_deg = tot_bach_deg_exp) %>%
@@ -28,6 +28,8 @@ acs_cln_enh <- function(df, year){
 
 
 # Load data
+cpis <- dbGetQuery(defaultdb, "SELECT * from cpi_2000_2017")
+
 census_2000 <- dbGetQuery(defaultdb, "SELECT * from corrected_2000_census")
 
 for(i in 2010:2017){
@@ -80,41 +82,50 @@ for(i in 2010:2017){
 }
 
 # Inflation rates
-cpi_2000 <- 172.2
-cpis_2010_2017 <- list(c(2010, 0.02099) )
+mutate_adj_for_inflation <- function(x, year){
+  cpi_2000 <- 172.2
+  year_var <- enquo(year)
+  var_name1 <- paste0("median_income_2000_adj", year)
+  var_name2 <- paste0("median_home_value_2000_adj", year)
+  cpi_for_year <- filter(cpis, year == !!year_var)[,2]
+  mutate(x, !!var_name1 := (cpi_for_year / cpi_2000) * median_income_2000,
+         !!var_name2 := (cpi_for_year / cpi_2000) * median_home_value_2000)
+}
 
-census_all_inflation <- census_all %>%
-  mutate(median_income_2000_adj2017 = median_income_2000 * 1.02099^17,
-         median_home_value_2000_adj2017 = median_home_value_2000 * 1.02099^17)
+census_all_inflation <- census_all 
 
-# Inflation 2000-2017 2.099%
-cln_all <- census_all %>%
-  mutate(median_income_2000_adj = median_income_2000 * 1.02099^17,
-         median_home_value_2000_adj = median_home_value_2000 * 1.02099^17) %>%
-  mutate(income_chg_00_10 = median_income_2010 - median_income_2000_adj,
-         income_chg_00_11 = median_income_2011 - median_income_2000_adj,
-         income_chg_00_12 = median_income_2012 - median_income_2000_adj,
-         income_chg_00_13 = median_income_2013 - median_income_2000_adj,
-         income_chg_00_14 = median_income_2014 - median_income_2000_adj,
-         income_chg_00_15 = median_income_2015 - median_income_2000_adj,
-         income_chg_00_16 = median_income_2016 - median_income_2000_adj,
-         income_chg_00_17 = median_income_2017 - median_income_2000_adj,
-         home_value_chg_00_10 = median_home_value_2010 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_11 = median_home_value_2011 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_12 = median_home_value_2012 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_13 = median_home_value_2013 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_14 = median_home_value_2014 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_15 = median_home_value_2015 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_16 = median_home_value_2016 - 
-           median_home_value_2000_adj,
-         home_value_chg_00_17 = median_home_value_2017 - 
-           median_home_value_2000_adj) %>%
+for(i in 2010:2017){
+  census_all_inflation <- census_all_inflation %>%
+    mutate_adj_for_inflation(i)
+}
+  
+
+# changes in income and home value
+mutate_changes <- function(x, year){
+  year_char <- as.character(year)
+  upper_var1 <- paste0("median_income_", year)
+  lower_var1 <- paste0("median_income_2000_adj", year)
+  upper_var2 <- paste0("median_home_value_", year)
+  lower_var2 <- paste0("median_home_value_2000_adj", year)
+  expre1 <- paste0(upper_var1, " - ", lower_var1)
+  expre2 <- paste0(upper_var2, " - ", lower_var2)
+  var_name1 <- paste0("income_chg_00_", str_sub(year_char, 3, 4))
+  var_name2 <- paste0("home_value_chg_00_", str_sub(year_char, 3, 4))
+  df <- mutate_(x, var_name1 = expre1, var_name2 = expre2)
+  colnames(df)[length(names(df)) - 1] <- var_name1
+  colnames(df)[length(names(df))] <- var_name2
+  return(df)
+}
+
+census_changes <- census_all_inflation
+
+for(i in 2010:2017){
+  census_changes <- census_changes %>%
+    mutate_changes(i)
+}
+
+# income gain or loss
+cln_all <- census_changes %>%
   mutate(in_gl_00_10 = 
            case_when(
              income_chg_00_10 > 0 ~ "gain",

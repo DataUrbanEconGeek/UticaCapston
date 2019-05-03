@@ -22,42 +22,50 @@ rva_tracts_n_gent <- rva_tracts %>%
   mutate(
     gent_n_egible_10 = case_when(
       gentrified_10 == "yes" ~ "Gentrified",
-      gentrified_10 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_10 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_11 = case_when(
       gentrified_11 == "yes" ~ "Gentrified",
-      gentrified_11 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_11 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_12 = case_when(
       gentrified_12 == "yes" ~ "Gentrified",
-      gentrified_12 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_12 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_13 = case_when(
       gentrified_13 == "yes" ~ "Gentrified",
-      gentrified_13 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_13 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_14 = case_when(
       gentrified_14 == "yes" ~ "Gentrified",
-      gentrified_14 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_14 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_15 = case_when(
       gentrified_15 == "yes" ~ "Gentrified",
-      gentrified_15 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_15 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_16 = case_when(
       gentrified_16 == "yes" ~ "Gentrified",
-      gentrified_16 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_16 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     ),
     gent_n_egible_17 = case_when(
       gentrified_17 == "yes" ~ "Gentrified",
-      gentrified_17 == "no" & eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
+      gentrified_17 == "no" & 
+        eligibil_for_gentrification == "yes" ~ "Egible, Did Not Gentrify",
       TRUE ~ "Not Egible for Gentification"
     )
   )
