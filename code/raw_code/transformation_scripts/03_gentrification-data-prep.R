@@ -65,7 +65,7 @@ gentrification_tests <- function(x, year){
     mutate(
     gentrified_t1 = case_when(!!!gent_test1),
     gentrified_t2 = case_when(!!!gent_test2),
-    gentrified_17 = case_when(!!!gent_test3)
+    gentrified_t3 = case_when(!!!gent_test3)
   )
 }
 
@@ -81,11 +81,12 @@ for(i in 2010:2017){
 for(i in 2010:2017){
   retrieve <- paste0("cln_2000_", i)
   df_name <- paste0("gent_2000_", i)
-  f_var1 <- paste("median_income_", i)
-  f_var2 <- paste("median_home_value_", i)
+  f_var1 <- paste0("median_income_", i)
+  f_var2 <- paste0("median_home_value_", i)
+  expre <- paste0(f_var1, " != -666666666 & ", f_var2, " != -666666666")
   temp_df <- get(retrieve) %>%
-    filter(!!f_var1 != -666666666 & !!f_var2 != -666666666 &
-             total_pop_2000 > 500) %>%
+    filter(total_pop_2000 > 500) %>%
+    filter_(expre) %>%
     eligibility_tests() %>%
     bachelors_change(i) %>%
     gentrification_tests(i)
