@@ -8,112 +8,112 @@
 library(dplyr)
 source("../helper_scripts/helper00_project-db-connection.R")
 
-cln_all <- dbGetQuery(defaultdb, "SELECT * from cln_census_2000_2017")
 
+eligibility_tests <- function(x){
+  df <- x %>%
+    mutate(
+      eligibility_test_1 = case_when(
+        median_income_2000 <= quantile(na.omit(median_income_2000), 0.4) ~ 1,
+        TRUE ~ 0
+        ),
+      eligibility_test_2 = case_when(
+        median_home_value_2000 <= quantile(na.omit(median_home_value_2000), 
+                                           0.4) ~ 1,
+        TRUE ~ 0
+        )
+      ) %>%
+    mutate(
+      eligibil_for_gentrification = case_when(
+        eligibility_test_1 + eligibility_test_2 == 2 ~ "yes",
+        TRUE ~ "no"
+        )
+      )
+  return(df)
+}
 
-gent_tests <- cln_all %>%
-  filter(median_income_2017 != -666666666 & 
-           median_home_value_2017 != -666666666 &
-           total_pop_2000 > 500) %>%
-  mutate(
-    eligibility_test_1 = case_when(
-      median_income_2000 <= quantile(na.omit(median_income_2000), 0.4) ~ 1,
-      TRUE ~ 0
-    ),
-    eligibility_test_2 = case_when(
-      median_home_value_2000 <= quantile(na.omit(median_home_value_2000), 
-                                         0.4) ~ 1,
-      TRUE ~ 0
-    )
-  ) %>%
-  mutate(
-    eligibil_for_gentrification = case_when(
-      eligibility_test_1 + eligibility_test_2 == 2 ~ "yes",
-      TRUE ~ "no"
-    )
-  ) %>%
-  mutate(change_pbd_00_10 = percent_bach_deg_2010 - percent_bach_deg_2000,
-         change_pbd_00_11 = percent_bach_deg_2011 - percent_bach_deg_2000,
-         change_pbd_00_12 = percent_bach_deg_2012 - percent_bach_deg_2000,
-         change_pbd_00_13 = percent_bach_deg_2013 - percent_bach_deg_2000,
-         change_pbd_00_14 = percent_bach_deg_2014 - percent_bach_deg_2000,
-         change_pbd_00_15 = percent_bach_deg_2015 - percent_bach_deg_2000,
-         change_pbd_00_16 = percent_bach_deg_2016 - percent_bach_deg_2000,
-         change_pbd_00_17 = percent_bach_deg_2017 - percent_bach_deg_2000) %>%
-  mutate(
-    gentrified_10 = case_when(
-      change_pbd_00_10 >= quantile(na.omit(change_pbd_00_10), 0.6) & 
-        home_value_chg_00_10 >= quantile(na.omit(home_value_chg_00_10), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_11 = case_when(
-      change_pbd_00_11 >= quantile(na.omit(change_pbd_00_10), 0.6) & 
-        home_value_chg_00_11 >= quantile(na.omit(home_value_chg_00_11), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_12 = case_when(
-      change_pbd_00_12 >= quantile(na.omit(change_pbd_00_12), 0.6) & 
-        home_value_chg_00_12 >= quantile(na.omit(home_value_chg_00_12), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_13 = case_when(
-      change_pbd_00_13 >= quantile(na.omit(change_pbd_00_13), 0.6) & 
-        home_value_chg_00_13 >= quantile(na.omit(home_value_chg_00_13), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_14 = case_when(
-      change_pbd_00_14 >= quantile(na.omit(change_pbd_00_14), 0.6) & 
-        home_value_chg_00_14 >= quantile(na.omit(home_value_chg_00_14), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_15 = case_when(
-      change_pbd_00_15 >= quantile(na.omit(change_pbd_00_15), 0.6) & 
-        home_value_chg_00_15 >= quantile(na.omit(home_value_chg_00_15), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_16 = case_when(
-      change_pbd_00_16 >= quantile(na.omit(change_pbd_00_16), 0.6) & 
-        home_value_chg_00_16 >= quantile(na.omit(home_value_chg_00_16), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    ),
-    gentrified_17 = case_when(
-      change_pbd_00_17 >= quantile(na.omit(change_pbd_00_17), 0.6) & 
-        home_value_chg_00_17 >= quantile(na.omit(home_value_chg_00_17), 0.6) &
-        eligibil_for_gentrification == "yes" ~ "yes",
-      TRUE ~ "no"
-    )
+bachelors_change <- function(x, year){
+  pbd_latter <- paste0("percent_bach_deg_", year)
+  var_name <- paste0("change_pbd_00_", str_sub(as.character(year), 3, 4))
+  expre <- paste0(pbd_latter, " - percent_bach_deg_2000")
+  df <- x %>%
+    mutate_(change_pbd = expre)
+  colnames(df)[length(names(df))] <- var_name
+  return(df)
+}
+
+gentrification_tests <- function(x, year){
+  cpbd_var_name <- paste0("change_pbd_00_", str_sub(as.character(year), 3, 4))
+  hvc_var_name <- paste0("home_value_chg_00_", str_sub(as.character(year), 3, 4))
+  new_var_name <- paste0("gentrified_", str_sub(as.character(year), 3, 4))
+  cpbd_var <- x[, grep(cpbd_var_name, names(x))]
+  hvc_var <- x[, grep(hvc_var_name, names(x))]
+  new_var <- x[, grep(new_var_name, names(x))]
+  gent_test1 <- list(
+    quo(cpbd_var >= quantile(na.omit(cpbd_var), 0.6) ~ "yes"),
+    quo(TRUE ~ "no")
   )
+  gent_test2 <- list(
+    quo(hvc_var >= quantile(na.omit(hvc_var), 0.6) ~ "yes"),
+    quo(TRUE ~ "no")
+  )
+  gent_test3 <- list(
+    quo(eligibil_for_gentrification == "yes" & gentrified_t1 == "yes" &
+          gentrified_t2 == "yes" ~ "yes"),
+    quo(TRUE ~ "no")
+  )
+  df <- x %>%
+    mutate(
+    gentrified_t1 = case_when(!!!gent_test1),
+    gentrified_t2 = case_when(!!!gent_test2),
+    gentrified_17 = case_when(!!!gent_test3)
+  )
+}
 
-dbWriteTable(defaultdb, "cbsa_gent_2000_2017", gent_tests, overwrite = TRUE,
-             row.names = FALSE)
+# Load data sets
+for(i in 2010:2017){
+  query_string <- paste0("SELECT * from cln_census_2000_", i)
+  df_name <- paste0("cln_2000_", i)
+  temp_df <- dbGetQuery(defaultdb, query_string)
+  assign(df_name, temp_df)
+}
 
-rva_gent <- gent_tests %>%
-  filter(county == "760")
+# Run tests
+for(i in 2010:2017){
+  retrieve <- paste0("cln_2000_", i)
+  df_name <- paste0("gent_2000_", i)
+  f_var1 <- paste("median_income_", i)
+  f_var2 <- paste("median_home_value_", i)
+  temp_df <- get(retrieve) %>%
+    filter(!!f_var1 != -666666666 & !!f_var2 != -666666666 &
+             total_pop_2000 > 500) %>%
+    eligibility_tests() %>%
+    bachelors_change(i) %>%
+    gentrification_tests(i)
+  assign(df_name, temp_df)
+  rm(list = retrieve)
+}
 
-dbWriteTable(defaultdb, "rva_gent_2000_2017", rva_gent, overwrite = TRUE,
-             row.names = FALSE)
+for(i in 2010:2017){
+  retrieve <- paste0("gent_2000_", i)
+  df_name <- paste0("cbsa_gent_2000_", i)
+  dbWriteTable(defaultdb, df_name, get(retrieve), overwrite = TRUE,
+               row.names = FALSE)
+}
 
+for(i in 2010:2017){
+  retrieve <- paste0("gent_2000_", i)
+  df_name <- paste0("rva_gent_", i)
+  temp_df <- get(retrieve) %>%
+    filter(county == "760")
+  assign(df_name, temp_df)
+}
 
-
-t2 <- rva_gent %>%
-  filter(eligibil_for_gentrification == "yes") %>%
-  select(tract, median_income_2000, median_income_2000_adj2017, 
-         median_income_2017, income_chg_00_17, in_gl_00_17, 
-         median_home_value_2000, median_home_value_2000_adj2017, 
-         median_home_value_2017, home_value_chg_00_17, females_bach_deg_2000,
-         males_bach_deg_2000, total_bach_deg_2000, total_pop_2000, 
-         percent_bach_deg_2000, females_bach_deg_2017, males_bach_deg_2017,
-         total_bach_deg_2017, total_pop_2017, percent_bach_deg_2017, 
-         change_pbd_00_17, gentrified_17)
-
-
+for(i in 2010:2017){
+  retrieve <- paste0("rva_gent_", i)
+  df_name <- paste0("rva_gent_2000_", i)
+  dbWriteTable(defaultdb, df_name, get(retrieve), overwrite = TRUE,
+               row.names = FALSE)
+}
 
 
 

@@ -16,7 +16,7 @@ acs_cln_enh <- function(df, year){
                        "males_bach_deg", "total_pop")
   acs_new_names <- paste0(new_names_start, "_", year)
   tot_bach_deg_exp <- paste0(acs_new_names[3], " + ", acs_new_names[4])
-  perc_bach_deg_exp <- paste0("(", acs_new_names[3], " / total_bach_deg) * 100")
+  perc_bach_deg_exp <- paste0("(total_bach_deg / ", acs_new_names[5], ") * 100")
   df_cln <- df %>%
     rename_at(vars(acs_old_names), ~ acs_new_names) %>%
     mutate_(total_bach_deg = tot_bach_deg_exp) %>%
@@ -62,10 +62,10 @@ cln_2000 <- census_2000 %>%
 # acs census clean
 for(i in 2010:2017){
   df_name <- paste0("cln_", i)
-  retirieve <- paste0("acs_", i, "_data")
-  temp_df <- acs_cln_enh(get(retirieve), year = i)
+  retrieve <- paste0("acs_", i, "_data")
+  temp_df <- acs_cln_enh(get(retrieve), year = i)
   assign(df_name, temp_df)
-  rm(list = retirieve)
+  rm(list = retrieve)
 }
 
 # Census Join
@@ -73,12 +73,14 @@ census_full_join <- function(x, y){
   full_join(x = x, y = y, by = c("state", "county", "tract"))
 }
 
-census_all <- cln_2000
 
 for(i in 2010:2017){
   retrieve <- paste0("cln_", i)
-  census_all <- census_all %>%
+  df_name <- paste0("census_00_", str_sub(as.character(i), 3, 4))
+  temp_df <- cln_2000 %>%
     census_full_join(get(retrieve))
+  assign(df_name, temp_df)
+  rm(list = retrieve)
 }
 
 # Inflation rates
@@ -92,11 +94,14 @@ mutate_adj_for_inflation <- function(x, year){
          !!var_name2 := (cpi_for_year / cpi_2000) * median_home_value_2000)
 }
 
-census_all_inflation <- census_all 
 
 for(i in 2010:2017){
-  census_all_inflation <- census_all_inflation %>%
+  retrieve <- paste0("census_00_", str_sub(as.character(i), 3, 4))
+  df_name <- paste0("census_00infl_", str_sub(as.character(i), 3, 4))
+  temp_df <- get(retrieve) %>%
     mutate_adj_for_inflation(i)
+  assign(df_name, temp_df)
+  rm(list = retrieve)
 }
   
 
@@ -117,57 +122,46 @@ mutate_changes <- function(x, year){
   return(df)
 }
 
-census_changes <- census_all_inflation
 
 for(i in 2010:2017){
-  census_changes <- census_changes %>%
+  retrieve <- paste0("census_00infl_", str_sub(as.character(i), 3, 4))
+  df_name <- paste0("census_00chg_", str_sub(as.character(i), 3, 4))
+  temp_df <- get(retrieve) %>%
     mutate_changes(i)
+  assign(df_name, temp_df)
+  rm(list = retrieve)
 }
 
 # income gain or loss
-cln_all <- census_changes %>%
-  mutate(in_gl_00_10 = 
-           case_when(
-             income_chg_00_10 > 0 ~ "gain",
-             income_chg_00_10 < 0 ~ "loss"
-           ),
-         in_gl_00_11 = 
-           case_when(
-             income_chg_00_11 > 0 ~ "gain",
-             income_chg_00_11 < 0 ~ "loss"
-           ),
-         in_gl_00_12 = 
-           case_when(
-             income_chg_00_12 > 0 ~ "gain",
-             income_chg_00_12 < 0 ~ "loss"
-           ),
-         in_gl_00_13 = 
-           case_when(
-             income_chg_00_13 > 0 ~ "gain",
-             income_chg_00_13 < 0 ~ "loss"
-           ),
-         in_gl_00_14 = 
-           case_when(
-             income_chg_00_14 > 0 ~ "gain",
-             income_chg_00_14 < 0 ~ "loss"
-           ),
-         in_gl_00_15 = 
-           case_when(
-             income_chg_00_15 > 0 ~ "gain",
-             income_chg_00_15 < 0 ~ "loss"
-           ),
-         in_gl_00_16 = 
-           case_when(
-             income_chg_00_16 > 0 ~ "gain",
-             income_chg_00_16 < 0 ~ "loss"
-           ),
-         in_gl_00_17 = 
-           case_when(
-             income_chg_00_17 > 0 ~ "gain",
-             income_chg_00_17 < 0 ~ "loss"
-           )
-  )
+income_gain_loss <- function(x, year){
+  in_change_var <- x[, grep("income_chg_00", names(x))]
+  year_char <- as.character(year)
+  year_var <- enquo(year)
+  var_name <- paste0("in_gl_00_", str_sub(year_char, 3, 4))
+  expre <- list(quo(in_change_var > 0 ~ "gain"), 
+                quo(in_change_var < 0 ~ "loss"))
+  df <- x %>%
+    mutate(in_gl = case_when(!!!expre))
+  colnames(df)[length(names(df))] <- var_name
+  return(df)
+}
 
-dbWriteTable(defaultdb, "cln_census_2000_2017", cln_all, overwrite = TRUE,
-             row.names = FALSE)
+
+for(i in 2010:2017){
+  retrieve <- paste0("census_00chg_", str_sub(as.character(i), 3, 4))
+  df_name <- paste0("census_ingl_00_", str_sub(as.character(i), 3, 4))
+  temp_df <- get(retrieve) %>%
+    income_gain_loss(i)
+  assign(df_name, temp_df)
+  rm(list = retrieve)
+}
+
+
+for(i in 2010:2017){
+  retrieve <- paste0("census_ingl_00_", str_sub(as.character(i), 3, 4))
+  df_name <- paste0("cln_census_2000_", i)
+  dbWriteTable(defaultdb, df_name, get(retrieve), overwrite = TRUE,
+               row.names = FALSE)
+}
+
 
