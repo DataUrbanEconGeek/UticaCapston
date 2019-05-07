@@ -111,4 +111,8 @@ gentmap_master <- ggplot(rva_tracts_n_gent,
   theme(axis.text = element_blank(), panel.grid = element_blank(),
         axis.title = element_blank())
 
+dest_path <- "../../../figures/exploratory_figures/05_gentried-map-master.png"
+ggsave(filename = dest_path, gentmap_master)
+
+
 
