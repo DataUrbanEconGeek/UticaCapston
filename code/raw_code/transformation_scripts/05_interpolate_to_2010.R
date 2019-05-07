@@ -9,7 +9,7 @@ library(dplyr)
 library(stringr)
 source("../helper_scripts/helper00_project-db-connection.R")
 
-file_path <- "../../data/raw_data/crosswalk_2000_2010.csv"
+file_path <- "../../../data/raw_data/crosswalk_2000_2010.csv"
 crosswalk <- read.csv(file_path, colClasses = "character")
 
 sf3_2000 <- dbGetQuery(defaultdb, "SELECT * from sf3_2000")
@@ -31,19 +31,21 @@ crosswalk_rva_csba <- crosswalk %>%
 merge_with_crosswalk <- sf3_2000 %>%
   full_join(crosswalk_rva_csba, by = "trtid00") %>%
   mutate(weight = as.numeric(weight)) %>%
-  mutate(m_in_w = P053001 * P052001,
-         m_h_w = H076001 * H001001) %>%
+  mutate(m_in_w = P053001 * P010001,
+         m_h_w = H085001 * H001001) %>%
   mutate(new_income = m_in_w * weight,
+         new_households = P010001 * weight,
          new_home_val = m_h_w * weight,
+         new_house_units = H001001 * weight,
          new_female_bach = P037032 * weight,
          new_male_bach = P037015 * weight,
          new_pop = P001001 * weight) %>%
-  select(trtid10, new_income, P052001, new_home_val, H001001, new_female_bach, 
-         new_male_bach, new_pop) %>%
+  select(trtid10, new_income, new_households, new_home_val, new_house_units,
+         new_female_bach, new_male_bach, new_pop) %>%
   group_by(trtid10) %>%
   summarise_all(sum) %>%
-  mutate(new_income = new_income / P052001, 
-         new_home_val = new_home_val / H001001) %>%
+  mutate(new_income = new_income / new_households, 
+         new_home_val = new_home_val / new_house_units) %>%
   select(trtid10, new_income, new_home_val, new_female_bach, 
          new_male_bach, new_pop)
   

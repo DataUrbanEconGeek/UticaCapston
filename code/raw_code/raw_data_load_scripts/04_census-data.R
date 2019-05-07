@@ -13,7 +13,6 @@ source("../helper_scripts/helper00_project-db-connection.R")
 apis <- listCensusApis()
 
 acs_2010_meta <- listCensusMetadata("acs/acs5", 2010)
-sf1_2000_meta <- listCensusMetadata("sf1", 2000)
 sf3_2000_meta <- listCensusMetadata("sf3", 2000)
 
 #
@@ -22,13 +21,15 @@ countys <- unique(rva_cbs_tracts$COUNTYFP)
 regionin_string <- paste0("state:51+county:", paste0(countys, collapse = ","))
 
 # P053001 - Median Household Income
-# H076001 - Median Home Value
+# P010001 - Total Households
+# H085001 - Median Home Value
+# H001001 - Number of housing Units
 # P037032 - Number of females with Bachelors Degree age 25+
 # P037015 - Number of males with Bachelors Degree age 25+
 # P001001 - Total Population
 sf3_2000_data <- getCensus(name = "sf3",
                              vintage = 2000,
-                             vars = c("P053001", "P052001", "H076001", 
+                             vars = c("P053001", "P010001", "H085001", 
                                       "H001001", "P037032", "P037015", 
                                       "P001001"),
                              region = "tract:*",
