@@ -116,5 +116,70 @@ for(i in 2010:2017){
                row.names = FALSE)
 }
 
+for(i in 2010:2017){
+  retrieve <- paste0("rva_gent_", i)
+  df_name <- paste0("test_results_", i)
+  new_var_name <- paste0("gentrified_", i)
+  temp_df <- get(retrieve) %>%
+    select(state, county, tract, eligibil_for_gentrification, gentrified_t3) %>%
+    mutate(!!new_var_name := gentrified_t3) %>%
+    select(-gentrified_t3)
+  assign(df_name, temp_df)
+}
 
+gent_test_results <- test_results_2010
 
+for(i in 2011:2017){
+  retrieve <- paste0("test_results_", i)
+  gent_test_results <- get(retrieve) %>%
+    full_join(gent_test_results, by = c("state", "county", "tract", 
+                                        "eligibil_for_gentrification"))
+}
+
+gent_test_results <- gent_test_results %>%
+  mutate(
+    binary_test_10 = case_when(
+      gentrified_2010 == "yes" ~ 1,
+      TRUE ~ 0
+      ),
+    binary_test_11 = case_when(
+      gentrified_2011 == "yes" ~ 1,
+      TRUE ~ 0
+      ),
+    binary_test_12 = case_when(
+      gentrified_2012 == "yes" ~ 1,
+      TRUE ~ 0
+      ),
+    binary_test_13 = case_when(
+      gentrified_2013 == "yes" ~ 1,
+      TRUE ~ 0
+      ),
+    binary_test_14 = case_when(
+      gentrified_2014 == "yes" ~ 1,
+      TRUE ~ 0
+      ),
+    binary_test_15 = case_when(
+      gentrified_2015 == "yes" ~ 1,
+      TRUE ~ 0
+      ),
+    binary_test_16 = case_when(
+      gentrified_2016 == "yes" ~ 1,
+      TRUE ~ 0),
+    binary_test_17 = case_when(
+      gentrified_2017 == "yes" ~ 1,
+      TRUE ~ 0
+      )
+    ) %>%
+  mutate(likely_gentrified_prob = (binary_test_10 + binary_test_11 +
+           binary_test_12 + binary_test_13 + binary_test_14 + binary_test_15 +
+           binary_test_16 + binary_test_17) / 8) %>%
+  select(state, county, tract, eligibil_for_gentrification, 
+         likely_gentrified_prob) %>%
+  mutate(
+    gentrified = case_when(
+      likely_gentrified_prob > 0.5 ~ "yes",
+      TRUE ~ "no"
+    ))
+
+dbWriteTable(defaultdb, "rva_gentrification_results", gent_test_results,
+             overwrite = TRUE, row.names = FALSE)
