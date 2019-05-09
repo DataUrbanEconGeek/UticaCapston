@@ -17,7 +17,7 @@ library(ggmap)
 library(tmap)
 library(RColorBrewer)
 library(wesanderson)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 # Load in master building data frame from Data Warehouse.
 m_buildings_df <- dbGetQuery(defaultdb, "SELECT *
@@ -30,7 +30,7 @@ m_buildings_df2 <- subset(m_buildings_df, m_buildings_df$lon !=
 rva_fp <- pgGetGeom(spatialdb, "rva_building_footprints")
 
 # Make into Spatial Points data frame.
-property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,92:93],
+property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,91:92],
                                         m_buildings_df2[,1:24],
                                         proj4string = rva_fp@proj4string)
 
@@ -81,7 +81,7 @@ year_map <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
 
 ggplotly(year_map)
 
-filename <- "../../figures/exploratory_figures/01_yr-built-map.png"
+filename <- "../../../figures/exploratory_figures/01_yr-built-map.png"
 ggsave(filename = filename, year_map)
 
 
@@ -122,7 +122,7 @@ year_map2 <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   theme(axis.text = element_blank(), axis.title = element_blank(),
         panel.grid = element_blank())
 
-filename <- "../../figures/exploratory_figures/01_yr-built-map-2.png"
+filename <- "../../../figures/exploratory_figures/01_yr-built-map-2.png"
 ggsave(filename = filename, year_map2)
 
 stories_map <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
@@ -133,7 +133,7 @@ stories_map <- ggplot(rva_fp_ex, aes(x = long, y = lat, group = group)) +
   theme(axis.text = element_blank(), axis.title = element_blank(),
         panel.grid = element_blank())
 
-filename <- "../../figures/exploratory_figures/01_stories-map-2.png"
+filename <- "../../../figures/exploratory_figures/01_stories-map-2.png"
 ggsave(filename = filename, stories_map)
 
 rva_samp <- sample_n(rva_fp7, size = 1000)

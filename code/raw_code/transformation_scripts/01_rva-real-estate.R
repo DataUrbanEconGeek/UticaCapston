@@ -11,7 +11,7 @@ library(dplyr)
 library(ggplot2)
 library(ggmap)
 library(RPostgreSQL)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 # Load in Richmond Assessor's data from Data Warehouse
 master_df <- RPostgreSQL::dbGetQuery(defaultdb, "SELECT * from real_master")
@@ -61,24 +61,26 @@ buildings_df$FullAddr <- paste(trimws(as.character(buildings_df$LocAddr),
 building_coord <- geocode(buildings_df$FullAddr[1:20000])
 building_coord2 <- geocode(buildings_df$FullAddr[20001:22980])
 building_coord3 <- geocode(buildings_df$FullAddr[22981:54000])
+building_coord4 <- geocode(buildings_df$FullAddr[54001:67400])
 
-write.csv(building_coord3, file = "../../data/raw_data/coords3.csv")
+write.csv(building_coord3, file = "../../../data/raw_data/coords3.csv")
+write.csv(building_coord4, file = "../../../data/raw_data/coords4.csv")
 # Bind coordinate data by rows
 master_coords <- bind_rows(building_coord, building_coord2)
 
 
 master_coords <- dbGetQuery(defaultdb, "SELECT * from coordinate_lookup")
 master_coords <- master_coords[,2:3]
-master_coords <- bind_rows(master_coords, building_coord3)
+master_coords <- bind_rows(master_coords, building_coord4)
 
 # Add in the property pins for coordinates.
-master_coords$pin <- trimws(buildings_df$PIN[1:54000], which = "right")
+master_coords$pin <- trimws(buildings_df$PIN, which = "right")
 
 # Write coordinates to data warehouse
 dbWriteTable(defaultdb, "coordinate_lookup", master_coords, overwrite = TRUE)
 
 # Keep a local back-up csv file.
-write.csv(master_coords, file = "../../data/raw_data/coordinates.csv")
+write.csv(master_coords, file = "../../../data/raw_data/coordinates.csv")
 
 # Fix Pins in Building data frame
 buildings_df$PIN <- trimws(buildings_df$PIN, which = "right")
