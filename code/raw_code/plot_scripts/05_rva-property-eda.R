@@ -21,7 +21,7 @@ scatter <- improve_df %>%
                                         linetype = "solid")) +
   coord_cartesian(xlim = c(0, 400), ylim = c(0, 115))
 
-ggsave(filename = "scatter.png", scatter)
+ggsave(filename = "../../../figures/exploratory_figures/scatter.png", scatter)
 
 histogram <- improve_df %>%
   select(NumRms) %>%
@@ -30,7 +30,7 @@ histogram <- improve_df %>%
   labs(title = "Number of Rooms", x = "Number of Rooms") +
   theme_tufte()
 
-ggsave(filename = "hist.png", histogram)
+ggsave(filename = "../../../figures/exploratory_figures/hist.png", histogram)
 
 boxplot <- improve_df %>%
   select(NumRms, NumBdRms, Num2Baths) %>%
@@ -48,7 +48,7 @@ boxplot <- improve_df %>%
         panel.grid.major.y = element_line(color = "darkgrey", size = .25, 
                                         linetype = "solid"))
 
-ggsave(filename = "boxplot.png", boxplot)
+ggsave(filename = "../../../figures/exploratory_figures/boxplot.png", boxplot)
 
 boxplot2 <- improve_df %>%
   select(NumRms, NumBdRms, Num2Baths) %>%
@@ -67,7 +67,7 @@ boxplot2 <- improve_df %>%
         panel.grid.major.y = element_line(color = "darkgrey", size = .25, 
                                           linetype = "solid"))
 
-ggsave(filename = "boxplot2.png", boxplot2)
+ggsave(filename = "../../../figures/exploratory_figures/boxplot2.png", boxplot2)
 
 barchart <- improve_df %>%
   select(CondDesc) %>%
@@ -86,7 +86,8 @@ barchart <- improve_df %>%
   theme(panel.grid.major.x = element_line(color = "darkgrey", size = .25, 
                                           linetype = "solid"))
   
-ggsave(filename = "barchart.png", barchart, height = 11, width = 17, scale = .5)
+ggsave(filename = "../../../figures/exploratory_figures/barchart.png", barchart,
+       height = 11, width = 17, scale = .5)
 
 piechart <- improve_df %>%
   select(CondDesc) %>%
@@ -108,7 +109,7 @@ piechart <- improve_df %>%
                           , "", "", "")[c(5,3,2,1,5,6,7)]), 
             position = position_stack(vjust = 0.5))
 
-ggsave(filename = "piechart.png", piechart)
+ggsave(filename = "../../../figures/exploratory_figures/piechart.png", piechart)
 
 time_seriese <- improve_df %>%
   select(YrBuilt, Stories) %>%
@@ -124,7 +125,8 @@ time_seriese <- improve_df %>%
   coord_cartesian(xlim = c(1700, 2019), ylim = c(0, 5)) +
   scale_x_continuous(name = "Year", breaks = seq(1700, 2019, by = 50))
 
-ggsave(filename = "time_seriese.png", time_seriese)
+ggsave(filename = "../../../figures/exploratory_figures/time_seriese.png", 
+       time_seriese)
 
 
 
