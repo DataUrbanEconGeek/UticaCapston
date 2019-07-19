@@ -78,17 +78,18 @@ neighborhoods_3$gent_n_egible[31] <- "Gentrified"
 
 gentmap_neighborhoods_master <- ggplot(neighborhoods_3) +
   geom_sf(aes(fill = gent_n_egible, color = gent_n_egible)) +
+  geom_sf(data = james_river) +
+  coord_sf(datum = NA) +
   scale_color_manual(values = proj_palette[c(15, 11, 13)],
                      breaks = c("Gentrified", "Egible, Did Not Gentrify",
                                 "Not Egible for Gentification")) +
   scale_fill_manual(values = proj_palette[c(7, 3, 9)], 
                     breaks = c("Gentrified", "Egible, Did Not Gentrify",
                                "Not Egible for Gentification")) +
-  geom_sf(data = james_river) +
   labs(fill = "Key", color = "Key", 
        title = "Gentrification in Richmond \n2000-2017") +
   theme_minimal() +
-  theme(axis.text = element_blank())
+  theme(axis.text = element_blank(), panel.grid = element_blank())
 
 dest_path <- "../../../figures/exploratory_figures/05_gentried-map-neighborhoods.png"
 ggsave(filename = dest_path, gentmap_neighborhoods_master)
