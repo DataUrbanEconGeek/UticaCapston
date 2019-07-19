@@ -147,7 +147,11 @@ single_fam %>%
   geom_boxplot()
 
 
+ave_stories_year <- improve_df_feat_add %>%
+  select(YrBuilt, Stories) %>%
+  group_by(YrBuilt) %>%
+  summarise(avg_stories = mean(na.omit(as.numeric(Stories))))
 
-
+write.csv(x = ave_stories_year, file = "../../../data/props_stories.csv")
 
 

@@ -26,14 +26,16 @@ hst <- "db-ubranecongeek-rva-51804-do-user-4688106-0.db.ondigitalocean.com"
 #                      UID = "doadmin",
 #                      PWD = getPass("Enter Password:"))
 
+pass <- getPass("Enter Password:")
+
 defaultdb <- dbConnect(pgdrv, dbname = "defaultdb",
                       host = hst, 
                       port = 25060, user = 'doadmin', 
-                      passwor = getPass("Enter Password:"))
+                      passwor = pass)
 
 
 spatialdb <- dbConnect(pgdrv, dbname = "spatialdb",
                 host = hst, 
                 port = 25060, user = 'doadmin', 
-                passwor = getPass("Enter Password:"))
+                passwor = pass)
 

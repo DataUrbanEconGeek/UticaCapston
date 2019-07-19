@@ -17,21 +17,20 @@ library(ggmap)
 library(tmap)
 library(RColorBrewer)
 library(wesanderson)
-source("../helper_scripts/helper00_project-db-connection.R")
+source("helper_scripts/helper00_project-db-connection.R")
 
 # Load in master building data frame from Data Warehouse.
-m_buildings_df <- dbGetQuery(defaultdb, "SELECT *
-                             from master_buildings")
+m_buildings_df <- dbGetQuery(defaultdb, "SELECT * from master_buildings")
 
-m_buildings_df2 <- subset(m_buildings_df, m_buildings_df$lon != 
+m_buildings_df <- subset(m_buildings_df, m_buildings_df$lon != 
                             is.na(m_buildings_df$lon))
 
 # Load in footprints.
 rva_fp <- pgGetGeom(spatialdb, "rva_building_footprints")
 
 # Make into Spatial Points data frame.
-property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,91:92],
-                                        m_buildings_df2[,1:24],
+property_spdf <- SpatialPointsDataFrame(m_buildings_df[,91:92],
+                                        m_buildings_df[,1:24],
                                         proj4string = rva_fp@proj4string)
 
 # Locate points from properties data that lie within polygons. This will provide
@@ -39,24 +38,28 @@ property_spdf <- SpatialPointsDataFrame(m_buildings_df2[,91:92],
 joined <- over(property_spdf, rva_fp)
 
 # Add the FID's into properties data
-m_buildings_df2 <- cbind(m_buildings_df2, joined)
+m_buildings_df <- cbind(m_buildings_df, joined)
 
 # Multiple FIDs mapped to single properties, making duplicates, select first 
 # observation.
-m_buildings_df3 <- m_buildings_df2 %>%
+m_buildings_df2 <- m_buildings_df %>%
   select(-one_of('PIN')) %>%
   group_by(FID) %>%
   filter(row_number() == 1)
 
 
 # Merge property data with spatial data by FID
-rva_fp2 <- sp::merge(rva_fp, m_buildings_df3, by.x = "FID", by.y = "FID")
+rva_fp2 <- sp::merge(rva_fp, m_buildings_df2, by.x = "FID", by.y = "FID")
 
 # Subset where spatial data frame where year is not missing.
 rva_fp3 <- rva_fp2[is.na(rva_fp2$YrBuilt) == FALSE, ]
 
 # Convert back into a regular data frame for use with ggplot2
 rva_fp4 <- fortify(rva_fp3, region = "FID")
+
+# 
+ids <- unique(rva_fp4$id)
+not_matched_props <- subset(m_buildings_df, m_buildings_df$FID != ids)
 
 # The fortified data frame only contains needed spatial data, merge the dropped
 # variables back in.

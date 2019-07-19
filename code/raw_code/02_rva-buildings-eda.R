@@ -10,11 +10,10 @@
 library(dplyr)
 library(ggplot2)
 library(ggmap)
-source("helper00_project-db-connection.R")
+source("../helper_scripts/helper00_project-db-connection.R")
 
 # Load in master building data frame from Data Warehouse.
-m_buildings_df <- dbGetQuery(defaultdb, "SELECT *
-                        from real_improvement")
+m_buildings_df <- dbGetQuery(defaultdb, "SELECT * from real_improvement")
 
 improv_sub_df <- m_buildings_df %>%
   group_by(PIN) %>%

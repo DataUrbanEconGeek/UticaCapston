@@ -39,6 +39,7 @@ gent_mapper <- function(x, year){
     scale_fill_manual(values = proj_palette[c(7, 3, 9)], 
                       breaks = c("Gentrified", "Egible, Did Not Gentrify",
                                  "Not Egible for Gentification")) +
+    geom_polygon(data = james_river, aes(x = long, y = lat, group = group)) +
     labs(fill = "Key", color = "Key", title = title_name) +
     theme_minimal() +
     theme(axis.text = element_blank(), panel.grid = element_blank(),
@@ -49,6 +50,12 @@ gent_mapper <- function(x, year){
 # Load tract geometries
 rva_tracts <- pgGetGeom(spatialdb, "rva_census_tracts")
 rva_tracts <- fortify(rva_tracts, region = "TRACTCE")
+
+# Load river geometry
+james_river <- pgGetGeom(spatialdb, "rva_james_river")
+james_river@data$SymbolID <- 1000182 #Need to assign an ID
+james_river <- fortify(james_river, region = "SymbolID")
+
 
 # load data on gentirfied tracts
 for(i in 2010:2017){
@@ -105,6 +112,7 @@ gentmap_master <- ggplot(rva_tracts_n_gent,
   scale_fill_manual(values = proj_palette[c(7, 3, 9)], 
                     breaks = c("Gentrified", "Egible, Did Not Gentrify",
                                "Not Egible for Gentification")) +
+  geom_polygon(data = james_river, aes(x = long, y = lat, group = group)) +
   labs(fill = "Key", color = "Key", 
        title = "Gentrification in Richmond \n2000-2017") +
   theme_minimal() +
