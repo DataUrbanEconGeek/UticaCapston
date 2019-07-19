@@ -40,9 +40,12 @@ gentmap_neighborhoods_master <- ggplot(neighborhood_gent) +
   theme_minimal() +
   theme(axis.text = element_blank(), panel.grid = element_blank())
 
-# Save Map
-dest_path <- "../../../figures/exploratory_figures/05_gentried-map-neighborhoods.svg"
+# Save Map png
+dest_path <- "../../../figures/exploratory_figures/05_gentried-map-neighborhoods.png"
 ggsave(filename = dest_path, gentmap_neighborhoods_master)
 
+# Save Map svg
+dest_path <- "../../../figures/exploratory_figures/05_gentried-map-neighborhoods.svg"
+ggsave(filename = dest_path, gentmap_neighborhoods_master)
 
 
