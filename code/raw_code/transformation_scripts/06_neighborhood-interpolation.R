@@ -11,7 +11,6 @@ library(sf)
 library(rpostgis)
 library(units)
 source("../helper_scripts/helper00_project-db-connection.R")
-source("../helper_scripts/helper04_color-palette.R")
 
 dbGetQuery(spatialdb, "SELECT * 
                         FROM pg_catalog.pg_tables 
@@ -29,11 +28,11 @@ gent_test_results <- dbGetQuery(defaultdb,
 # Join tract gentrification data
 rva_tracts_n_gent <- rva_tracts %>%
   inner_join(gent_test_results, by = c("TRACTCE" = "tract")) %>%
-  mutate(gent_n_egible = case_when(
+  mutate(gent_n_eligible = case_when(
     gentrified == "yes" ~ "Gentrified",
     gentrified == "no" & eligibil_for_gentrification == "yes" ~
-      "Egible, Did Not Gentrify",
-    TRUE ~ "Not Egible for Gentification"))
+      "Eligible, Did Not Gentrify",
+    TRUE ~ "Not Eligible for Gentification"))
 
 # Load neighborhood geometry
 neighborhoods <- pgGetGeom(spatialdb, "rva_neighborhoods")
@@ -62,16 +61,17 @@ st_geometry(max_overlap) <- NULL
 # assign a gentrification status for each neighborhood
 assign_gent_status <- max_overlap %>%
   inner_join(y = (tract_neighborhood %>% 
-                    select(Name, pct_overlap, gent_n_egible)), 
+                    select(Name, pct_overlap, gent_n_eligible)), 
              by = c("Name" = "Name", "max_overlap" = "pct_overlap")) %>%
-  select(Name, gent_n_egible)
+  select(Name, gent_n_eligible)
 
 neighborhoods_3 <- neighborhoods %>%
   inner_join(assign_gent_status, by = "Name")
 
-neighborhoods_3$gent_n_egible[31] <- "Gentrified"
+neighborhoods_3$gent_n_eligible[31] <- "Gentrified"
 
 # Load neighborhood boundries with gentrification data to DB 
 neighborhoods_sp <- as_Spatial(neighborhoods_3)
-pgInsert(spatialdb, "rva_neighborhoods_gent", neighborhoods_sp)
+pgInsert(spatialdb, "rva_neighborhoods_gent", neighborhoods_sp, 
+         overwrite = TRUE)
 

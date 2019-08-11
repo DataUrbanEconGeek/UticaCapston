@@ -1,0 +1,65 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head><title>
+	City of Richmond Property Search
+</title><link href="App_Themes/MainTheme/Main.css" type="text/css" rel="stylesheet" /><link href="App_Themes/MainTheme/Print.css" type="text/css" rel="stylesheet" /><link href="App_Themes/MainTheme/Print_old.css" type="text/css" rel="stylesheet" /></head>
+<body>
+    <form name="aspnetForm" method="post" action="ApplicationError.aspx?e=500" id="aspnetForm">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTEzNzA5NjAwNQ9kFgJmD2QWAgIDD2QWAgIDD2QWAgIBDxYCHgRUZXh0BX9BbiBFcnJvciBoYXMgb2NjdXJlZCBpbiB0aGUgYXBwbGljYXRpb24gd2hpbGUgYXR0ZW1wdGluZyB0byBmdWxmaWxsIHlvdXIgcmVxdWVzdC4gUGxlYXNlIGNvbnRhY3QgdGhlIGhlbHAgZGVzayBhdCA4MDQtNjQ2LTYzNjcuZGQqkoPAUyOwLZ0z2Gy3G5UU+SgvVA==" />
+
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEWBALqmdqEBALizISeDQKkhfL2BALPgMXJAxb6dmE2Okiw4Kb/v8DmI670NkzF" />
+	<div id="MasterMain">
+		<div id="MasterHeader" title="Go to Real Estate Assessor site" onclick="window.location = 'http://www.richmondgov.com/assessor/'" ></div>
+		<div id="MasterLeftColumn">
+			<ul>
+			    <li><a href="http://www.richmondgov.com/assessor/">Real Estate Assessor Home page</a></li>
+				<li><a href="Default.aspx">Property Search Main page</a></li>
+				<li><a id="ctl00_aPINSearch" title="Parcel ID(Parcel Number or Map reference number) used to indentify individual properties in the City of Richmond" href="javascript:__doPostBack('ctl00$aPINSearch','')">Search by Parcel ID</a></li>				
+				<li><a id="ctl00_aAddressSearch" title="Property Search by street address" href="javascript:__doPostBack('ctl00$aAddressSearch','')">Search by Property Address</a></li>
+				<li><a id="ctl00_aOtherSearch" title="List of search criteria fields such as Land Use(Residential, Multifamily, Commercial etc),Property Class, Except Code, Land Area, Land Value,Address,Transfer information and Improvement information" href="javascript:__doPostBack('ctl00$aOtherSearch','')">Search by Other Information</a></li>
+				<li><a href="Glossary.aspx">Glossary of Terms</a></li>
+				<li><a href="Disclaimer.aspx">Disclaimer</a></li>
+			</ul>
+			<br />
+		</div>
+		<div id="MasterContentColumn">
+			
+    	<div class="mainWarning">
+		<br />
+		<p><b>A Problem has occurred in the application.</b></p>
+		<p>An Error has occured in the application while attempting to fulfill your request. Please contact the help desk at 804-646-6367.
+            <span id="ctl00_MainContent_lblErrorMessage"></span>
+		</p>
+		<p><b><a href="default.aspx">Back to Main Page</a></b></p>
+		<p>&nbsp;</p>
+		</div>   
+        <div class="mainWarning" style="visibility:hidden;">
+		<p></p>
+        <p></p>
+        </div>
+
+		</div>		
+		<div id="MasterFooter">
+			Richmond City Assessor’s Office | 900 E. Broad St, Rm 802 | Richmond, VA 23219  | Phone: (804) 646-7500 | Fax: (804) 646-5686 <br />
+			&#169; 1999-2019 City of Richmond, Virginia. All rights reserved. Privacy, Disclaimer & Terms.
+		</div>
+    </div>
+    </form>
+<script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+  m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-39764838-1', 'richmond.va.us');
+    ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>
