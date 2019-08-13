@@ -168,7 +168,10 @@ ggsave(filename = "../../../figures/exploratory_figures/07_dwnt-hwy-scatterplot.
 dbWriteTable(defaultdb, "data_for_models", set_large, overwrite = TRUE, 
              row.names = FALSE)
 
+# Set seed for reproduction
 set.seed(182)
+
+# Split into training, testing and validation datasets
 train_set <- set_large %>%
   mutate(
     samp_weight = case_when(gent_n_eligible == "Eligible, Did Not Gentrify" ~ .20,
@@ -186,147 +189,18 @@ valid_set <- set_large %>%
   anti_join(train_set) %>%
   anti_join(test_set)
 
-####### decision tree ########
-accuracy <- function(x){
-  sum(diag(x)/(sum(rowSums(x)))) * 100
-}
+# Save training, testing, and validation data for models to DB
+dbWriteTable(defaultdb, "training_data", train_set, overwrite = TRUE, 
+             row.names = FALSE)
 
-library(rpart)
-library(rpart.plot)
+dbWriteTable(defaultdb, "testing_data", test_set, overwrite = TRUE, 
+             row.names = FALSE)
 
-fit <- rpart(gent_n_eligible ~ built_unbuilt_ratio + Downtown + Highways + 
-               Historic_Urban_Neighborhood + Industrial_Land + 
-               Post_Industrial_Zone + Post_War_Suburb + Streetcar_Neighborhood +
-               num_props + med_age + iqr_age + med_stories + iqr_stories + 
-               med_finsize + iqr_finsize + med_rooms + iqr_rooms + 
-               pct_r_one_st + pct_r_two_st + pct_sing_fam + pct_condo_hr + 
-               pct_dupl + pct_gable + pct_wfws + pct_brick, data = train_set, 
-             method = "class")
-
-rpart.plot(fit)
-
-# test
-test_set2 <- test_set %>%
-  select(-gent_n_eligible)
-
-pred1_test <- predict(fit, newdata = test_set2)
-pred2_test <- as.data.frame(pred1_test)
-names(pred2_test) <- c("e_dng", "gent", "nefg")
-pred_df <- test_set %>%
-  select(Name, gent_n_eligible) %>%
-  bind_cols(pred2_test) %>%
-  mutate(
-    pred_status = case_when(e_dng > gent & e_dng > nefg ~ 
-                              "Eligible, Did Not Gentrify",
-                            gent > e_dng & gent > nefg ~ "Gentrified",
-                            nefg > e_dng & nefg > gent ~ 
-                              "Not Eligible for Gentification")
-  ) %>%
-  mutate(
-    true_pos = case_when(gent_n_eligible == pred_status ~ 1, TRUE ~ 0),
-    true_neg = case_when(gent_n_eligible != pred_status ~ 1, TRUE ~ 0)
-  )
-
-#results
-tab1_test <- table(pred_df$pred_status, test_set$gent_n_eligible)
-accuracy(tab1_test)
-
-# roc plot
-library(multiROC)
-pred1_df <- as.data.frame(pred1_test)
-names(pred1_df) <- c("E", "G", "N")
-
-act1 <- test_set$gent_n_eligible
-
-for_roc1 <- cbind(act1, pred1_df) %>%
-  mutate(
-    G1_true = case_when(act1 == "Eligible, Did Not Gentrify" ~ 1, TRUE ~ 0),
-    G2_true = case_when(act1 == "Not Eligible for Gentification" ~ 1, TRUE ~ 0),
-    G3_true = case_when(act1 == "Gentrified" ~ 1, TRUE ~ 0),
-    G1_pred_m1 = E,
-    G2_pred_m1 = N,
-    G3_pred_m1 = G
-  ) %>%
-  select(G1_true, G2_true, G3_true, G1_pred_m1, G2_pred_m1, G3_pred_m1)
-
-
-roc1 <- multi_roc(for_roc1)
-for_plot_roc1 <- plot_roc_data(roc1)
-
-for_plot_roc1 %>%
-  filter(Group == "Macro") %>%
-  ggplot(aes(y = Sensitivity, x = sort(Specificity))) +
-  geom_line() +
-  xlab("Specificity")
-
-
-# Validate
-pred1_val <- predict(fit, newdata = valid_set)
-pred2_val <- as.data.frame(pred1_val)
-names(pred2_val) <- c("e_dng", "gent", "nefg")
-pred_df_val <- valid_set %>%
-  select(Name, gent_n_eligible) %>%
-  bind_cols(pred2_test) %>%
-  mutate(
-    pred_status = case_when(e_dng > gent & e_dng > nefg ~ 
-                              "Eligible, Did Not Gentrify",
-                            gent > e_dng & gent > nefg ~ "Gentrified",
-                            nefg > e_dng & nefg > gent ~ 
-                              "Not Eligible for Gentification")
-  ) %>%
-  mutate(
-    true_pos = case_when(gent_n_eligible == pred_status ~ 1, TRUE ~ 0),
-    true_neg = case_when(gent_n_eligible != pred_status ~ 1, TRUE ~ 0)
-  )
-
-tab1_val <- table(pred_df_val$pred_status, valid_set$gent_n_eligible)
-accuracy(tab1_val)
+dbWriteTable(defaultdb, "validation_data", valid_set, overwrite = TRUE, 
+             row.names = FALSE)
 
 
 
-####### Random Forest #########
-library(randomForest)
-fit2 <- randomForest(gent_n_eligible ~ built_unbuilt_ratio + Downtown + 
-                      Highways + Historic_Urban_Neighborhood + Industrial_Land + 
-                      Post_Industrial_Zone + Post_War_Suburb + 
-                      Streetcar_Neighborhood + num_props + med_age + iqr_age + 
-                      med_stories + iqr_stories + med_finsize + iqr_finsize + 
-                      med_rooms + iqr_rooms + pct_r_one_st + pct_r_two_st + 
-                      pct_sing_fam + pct_condo_hr + pct_dupl + pct_gable + 
-                      pct_wfws + pct_brick, data = train_set, 
-                    na.action=na.roughfix)
-
-imp <- importance(fit2)
-imp2 <- as.data.frame(imp)
-
-pred3_test <- predict(fit2, newdata = test_set)
-pred4_test <- as.data.frame(pred3_test)
-
-tab2_test <- table(pred3_test, test_set$gent_n_eligible)
-accuracy(tab2_test)
-
-pred_df2_test <- test_set %>%
-  select(Name, gent_n_eligible) %>%
-  bind_cols(pred4_test) %>%
-  mutate(
-    true_pos = case_when(gent_n_eligible == pred3_test ~ 1, TRUE ~ 0),
-    true_neg = case_when(gent_n_eligible != pred3_test ~ 1, TRUE ~ 0)
-  )
-
-# Validate
-pred3_val <- predict(fit2, newdata = valid_set)
-pred4_val <- as.data.frame(pred3_val)
-
-tab2_val <- table(pred3_val, valid_set$gent_n_eligible)
-accuracy(tab2_val)
-
-pred_df2_val <- valid_set %>%
-  select(Name, gent_n_eligible) %>%
-  bind_cols(pred4_val) %>%
-  mutate(
-    true_pos = case_when(gent_n_eligible == pred3_val ~ 1, TRUE ~ 0),
-    true_neg = case_when(gent_n_eligible != pred3_val ~ 1, TRUE ~ 0)
-  )
 
 ######### knn ##########
 library(class)
@@ -361,3 +235,75 @@ pr_val <- knn(train_norm, val_norm, cl = target_cat, k = 10)
 
 tab3_val <- table(pr, val_cat)
 accuracy(tab3_val)
+
+#### plots
+library(ggthemes)
+iqr_age_bp <- set_large %>%
+   mutate(gent_status = case_when(as.character(gent_n_eligible) == 
+                                    "Not Eligible for Gentification" ~ 
+                      "Not Eligible for Gentrification",
+                    TRUE ~ as.character(gent_n_eligible))) %>%
+   ggplot(aes(x = gent_status, y = iqr_age, fill = gent_status)) +
+   geom_boxplot() +
+   labs(title = "IQR of Properties Age per Neighborhood Boxplot", 
+        x = "Gentrification Label", 
+        y = "IQR of Properties Age per Neighborhood",
+        fill = "Key") +
+   theme_tufte()
+
+pct_gable_bp <- set_large %>%
+  mutate(gent_status = case_when(as.character(gent_n_eligible) == 
+                                   "Not Eligible for Gentification" ~ 
+                                   "Not Eligible for Gentrification",
+                                 TRUE ~ as.character(gent_n_eligible))) %>%
+  ggplot(aes(x = gent_status, y = pct_gable, fill = gent_status)) +
+  geom_boxplot() +
+  labs(title = "Percents of Properties with Gable Roofs per Neighborhood \nBoxplot", 
+       x = "Gentrification Label", 
+       y = "Percents of Properties per Neighborhood",
+       fill = "Key") +
+  theme_tufte()
+
+downtown_bp <- set_large %>%
+  mutate(gent_status = case_when(as.character(gent_n_eligible) == 
+                                   "Not Eligible for Gentification" ~ 
+                                   "Not Eligible for Gentrification",
+                                 TRUE ~ as.character(gent_n_eligible))) %>%
+  ggplot(aes(x = gent_status, y = Downtown, fill = gent_status)) +
+  geom_boxplot() +
+  labs(title = "Percents of Downtown Coverage per Neighborhood \nBoxplot", 
+       x = "Gentrification Label", 
+       y = "Percents of Coverage per Neighborhood",
+       fill = "Key") +
+  theme_tufte()
+
+iqr_finsize_bp <- set_large %>%
+  mutate(gent_status = case_when(as.character(gent_n_eligible) == 
+                                   "Not Eligible for Gentification" ~ 
+                                   "Not Eligible for Gentrification",
+                                 TRUE ~ as.character(gent_n_eligible))) %>%
+  ggplot(aes(x = gent_status, y = iqr_finsize, fill = gent_status)) +
+  geom_boxplot() +
+  labs(title = "IQR of Properties Finished Sizes per Neighborhood Boxplot", 
+       x = "Gentrification Label", 
+       y = "IQR of Properties Finished Seizes per Neighborhood",
+       fill = "Key") +
+  theme_tufte()
+
+built_unbuilt_bp <- set_large %>%
+  mutate(gent_status = case_when(as.character(gent_n_eligible) == 
+                                   "Not Eligible for Gentification" ~ 
+                                   "Not Eligible for Gentrification",
+                                 TRUE ~ as.character(gent_n_eligible))) %>%
+  ggplot(aes(x = gent_status, y = built_unbuilt_ratio, fill = gent_status)) +
+  geom_boxplot() +
+  labs(title = "Ratios of Built to Open Spaces per Neighborhood Boxplot", 
+       x = "Gentrification Label", 
+       y = "Ratios per Neighborhood",
+       fill = "Key") +
+  theme_tufte()
+
+
+
+
+
